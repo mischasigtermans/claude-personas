@@ -1,0 +1,8 @@
+{
+  "name": "personas",
+  "description": "Session-aware persona advisors with project-scoped threads and memory. Bundled pack of public-figure personas; pluggable for third-party personas via git repos.",
+  "version": "0.1.0",
+  "author": { "name": "Mischa Sigtermans" },
+  "repository": "https://github.com/mischasigtermans/claude-personas",
+  "keywords": ["personas", "agents", "advisors", "sessions", "memory", "multi-agent"]
+}
