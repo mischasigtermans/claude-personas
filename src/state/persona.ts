@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { paths } from './paths.js';
+import { loadInstalledPlugins } from './installed-plugins.js';
 
 export interface PersonaMeta {
   name: string;
@@ -94,30 +94,10 @@ async function readPersonaDir(dir: string): Promise<PersonaMeta | null> {
   }
 }
 
-interface InstalledPlugin {
-  installPath: string;
-}
-
-interface InstalledPluginsFile {
-  plugins: Record<string, InstalledPlugin[]>;
-}
-
 async function loadPluginPersonas(): Promise<PersonaMeta[]> {
-  const file = join(homedir(), '.claude', 'plugins', 'installed_plugins.json');
-  let raw: string;
-  try {
-    raw = await readFile(file, 'utf8');
-  } catch {
-    return [];
-  }
-  let parsed: InstalledPluginsFile;
-  try {
-    parsed = JSON.parse(raw) as InstalledPluginsFile;
-  } catch {
-    return [];
-  }
+  const { plugins } = await loadInstalledPlugins();
   const out: PersonaMeta[] = [];
-  for (const entries of Object.values(parsed.plugins ?? {})) {
+  for (const entries of Object.values(plugins)) {
     for (const entry of entries) {
       const meta = await readPersonaJson(entry.installPath);
       if (meta) out.push(meta);

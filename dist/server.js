@@ -14143,14 +14143,33 @@ function isEnoent(err) {
 }
 
 // src/state/persona.ts
-import { readFile as readFile2, readdir } from "node:fs/promises";
+import { readFile as readFile3, readdir } from "node:fs/promises";
+import { join as join3 } from "node:path";
+
+// src/state/installed-plugins.ts
+import { readFile as readFile2 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import { join as join2 } from "node:path";
+var cache = null;
+async function loadInstalledPlugins() {
+  if (cache)
+    return cache;
+  try {
+    const raw = await readFile2(join2(homedir2(), ".claude", "plugins", "installed_plugins.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    cache = { plugins: parsed.plugins ?? {} };
+  } catch {
+    cache = { plugins: {} };
+  }
+  return cache;
+}
+
+// src/state/persona.ts
 async function listPersonas() {
   const external = [];
   const plugins = [];
   for (const dir of await safeReaddir(paths.externalDir)) {
-    const meta2 = await readPersonaDir(join2(paths.externalDir, dir));
+    const meta2 = await readPersonaDir(join3(paths.externalDir, dir));
     if (meta2)
       external.push(meta2);
   }
@@ -14195,9 +14214,9 @@ async function resolvePersona(ref) {
   return { ambiguous: true, candidates: matches };
 }
 async function readPersonaDir(dir) {
-  const personaFile = join2(dir, "persona.md");
+  const personaFile = join3(dir, "persona.md");
   try {
-    const text = await readFile2(personaFile, "utf8");
+    const text = await readFile3(personaFile, "utf8");
     const fm = parseFrontmatter(text);
     if (!fm || typeof fm.name !== "string")
       return null;
@@ -14217,21 +14236,9 @@ async function readPersonaDir(dir) {
   }
 }
 async function loadPluginPersonas() {
-  const file = join2(homedir2(), ".claude", "plugins", "installed_plugins.json");
-  let raw;
-  try {
-    raw = await readFile2(file, "utf8");
-  } catch {
-    return [];
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  const { plugins } = await loadInstalledPlugins();
   const out = [];
-  for (const entries of Object.values(parsed.plugins ?? {})) {
+  for (const entries of Object.values(plugins)) {
     for (const entry of entries) {
       const meta2 = await readPersonaJson(entry.installPath);
       if (meta2)
@@ -14242,7 +14249,7 @@ async function loadPluginPersonas() {
 }
 async function readPersonaJson(pluginRoot2) {
   try {
-    const text = await readFile2(join2(pluginRoot2, "persona.json"), "utf8");
+    const text = await readFile3(join3(pluginRoot2, "persona.json"), "utf8");
     const json = JSON.parse(text);
     if (typeof json.name !== "string" || json.name.length === 0)
       return null;
@@ -14385,10 +14392,10 @@ var personasResolve = {
 
 // src/state/parley-sync.ts
 import { homedir as homedir3 } from "node:os";
-import { join as join3, dirname as dirname2 } from "node:path";
-import { mkdir as mkdir2, readFile as readFile3, writeFile as writeFile2, unlink, rename } from "node:fs/promises";
-var parleyDir = () => process.env.PARLEY_DIR ?? join3(homedir3(), ".claude", "parley");
-var peersFile = () => join3(parleyDir(), "peers.json");
+import { join as join4, dirname as dirname2 } from "node:path";
+import { mkdir as mkdir2, readFile as readFile4, writeFile as writeFile2, unlink, rename } from "node:fs/promises";
+var parleyDir = () => process.env.PARLEY_DIR ?? join4(homedir3(), ".claude", "parley");
+var peersFile = () => join4(parleyDir(), "peers.json");
 var peersLockFile = () => `${peersFile()}.lock`;
 async function syncParleyOnEnable(persona) {
   if (!await isParleyInstalled())
@@ -14427,17 +14434,12 @@ async function syncParleyOnDisable(name) {
   });
 }
 async function isParleyInstalled() {
-  try {
-    const raw = await readFile3(join3(homedir3(), ".claude", "plugins", "installed_plugins.json"), "utf8");
-    const parsed = JSON.parse(raw);
-    return Object.keys(parsed.plugins ?? {}).some((k) => k.startsWith("parley@"));
-  } catch {
-    return false;
-  }
+  const { plugins } = await loadInstalledPlugins();
+  return Object.keys(plugins).some((k) => k.startsWith("parley@"));
 }
 async function readPeers() {
   try {
-    const raw = await readFile3(peersFile(), "utf8");
+    const raw = await readFile4(peersFile(), "utf8");
     const parsed = JSON.parse(raw);
     return { peers: parsed.peers ?? {} };
   } catch {
@@ -14478,7 +14480,7 @@ async function withLock(lockPath, fn) {
 async function tryReclaimStaleLock(lockPath) {
   let pid;
   try {
-    const contents = (await readFile3(lockPath, "utf8")).trim();
+    const contents = (await readFile4(lockPath, "utf8")).trim();
     pid = parseInt(contents, 10);
     if (!Number.isFinite(pid) || pid <= 0)
       return false;
@@ -14577,11 +14579,11 @@ async function gitRemote(cwd) {
 }
 
 // src/state/threads.ts
-import { mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3, appendFile, unlink as unlink2, readdir as readdir2 } from "node:fs/promises";
+import { mkdir as mkdir3, readFile as readFile5, writeFile as writeFile3, appendFile, unlink as unlink2, readdir as readdir2 } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
 async function readOpenThread(projectId2, persona) {
   try {
-    const text = await readFile4(paths.openThreadFile(projectId2, persona), "utf8");
+    const text = await readFile5(paths.openThreadFile(projectId2, persona), "utf8");
     return JSON.parse(text);
   } catch (err) {
     if (isEnoent3(err))
@@ -14609,7 +14611,7 @@ async function writeLastClosed(projectId2, persona, threadId) {
 }
 async function readLastClosed(projectId2, persona) {
   try {
-    const text = await readFile4(paths.lastClosedFile(projectId2, persona), "utf8");
+    const text = await readFile5(paths.lastClosedFile(projectId2, persona), "utf8");
     return JSON.parse(text);
   } catch (err) {
     if (isEnoent3(err))
@@ -14626,7 +14628,7 @@ function generateThreadId() {
 async function ensureTranscript(projectId2, persona, threadId) {
   await mkdir3(paths.threadsDir(projectId2, persona), { recursive: true });
   try {
-    await readFile4(paths.threadFile(projectId2, persona, threadId), "utf8");
+    await readFile5(paths.threadFile(projectId2, persona, threadId), "utf8");
   } catch (err) {
     if (isEnoent3(err)) {
       await writeFile3(paths.threadFile(projectId2, persona, threadId), "", "utf8");
@@ -14805,7 +14807,7 @@ var personasCommitTurn = {
 };
 
 // src/state/memory.ts
-import { mkdir as mkdir5, readFile as readFile5, writeFile as writeFile4 } from "node:fs/promises";
+import { mkdir as mkdir5, readFile as readFile6, writeFile as writeFile4 } from "node:fs/promises";
 async function appendMemoryBullets(projectId2, persona, takeawaysText) {
   const file = paths.memoryFile(projectId2, persona);
   const existing = await readMemory(file);
@@ -14835,7 +14837,7 @@ async function appendMemoryBullets(projectId2, persona, takeawaysText) {
 }
 async function readMemory(file) {
   try {
-    const text = await readFile5(file, "utf8");
+    const text = await readFile6(file, "utf8");
     return text.split(`
 `).filter((l) => l.trim().length > 0);
   } catch (err) {
@@ -14893,7 +14895,7 @@ var personasCloseThread = {
 };
 
 // src/tools/reopen_thread.ts
-import { readFile as readFile6 } from "node:fs/promises";
+import { readFile as readFile7 } from "node:fs/promises";
 var personasReopenThread = {
   name: "reopen_thread",
   description: "Restore the persona's most recently closed thread as the open thread. Errors if no last-closed exists or if a thread is already open.",
@@ -14920,7 +14922,7 @@ var personasReopenThread = {
     if (!last)
       throw new Error(`No closed thread to reopen for ${p.name}.`);
     const transcript = paths.threadFile(pid, p.name, last.thread_id);
-    const text = await readFile6(transcript, "utf8");
+    const text = await readFile7(transcript, "utf8");
     const firstUser = text.split(`
 `).find((l) => /^## .* — User$/.test(l));
     const startedAt = firstUser ? firstUser.replace(/^## /, "").replace(/ — User$/, "") : new Date().toISOString();
@@ -14964,10 +14966,10 @@ var personasThreads = {
 };
 
 // src/tools/add.ts
-import { mkdir as mkdir6, readFile as readFile7, rm, symlink, stat } from "node:fs/promises";
+import { mkdir as mkdir6, readFile as readFile8, rm, symlink, stat } from "node:fs/promises";
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
-import { basename, isAbsolute, join as join4 } from "node:path";
+import { basename, isAbsolute, join as join5 } from "node:path";
 var exec2 = promisify2(execFile2);
 var personasAdd = {
   name: "add",
@@ -14993,7 +14995,7 @@ var personasAdd = {
       throw new Error("source must be a git URL or absolute path (or file:// URL)");
     }
     const inferredName = inferName(source);
-    const targetDir = join4(paths.externalDir, inferredName);
+    const targetDir = join5(paths.externalDir, inferredName);
     if (await exists(targetDir)) {
       throw new Error(`A persona named "${inferredName}" already exists in external/. Remove it first.`);
     }
@@ -15002,10 +15004,10 @@ var personasAdd = {
     } else {
       await symlink(localPath, targetDir);
     }
-    const personaFile = join4(targetDir, "persona.md");
+    const personaFile = join5(targetDir, "persona.md");
     let text;
     try {
-      text = await readFile7(personaFile, "utf8");
+      text = await readFile8(personaFile, "utf8");
     } catch {
       await rm(targetDir, { recursive: true, force: true });
       throw new Error(`No persona.md found at ${personaFile}`);

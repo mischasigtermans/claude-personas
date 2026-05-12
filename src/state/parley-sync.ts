@@ -2,6 +2,7 @@ import { homedir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { mkdir, readFile, writeFile, unlink, rename } from 'node:fs/promises';
 import type { PersonaMeta } from './persona.js';
+import { loadInstalledPlugins } from './installed-plugins.js';
 
 const parleyDir = (): string =>
   process.env.PARLEY_DIR ?? join(homedir(), '.claude', 'parley');
@@ -74,16 +75,8 @@ export async function syncParleyOnDisable(name: string): Promise<void> {
  * doesn't exist and we'd silently no-op forever.
  */
 async function isParleyInstalled(): Promise<boolean> {
-  try {
-    const raw = await readFile(
-      join(homedir(), '.claude', 'plugins', 'installed_plugins.json'),
-      'utf8',
-    );
-    const parsed = JSON.parse(raw) as { plugins?: Record<string, unknown> };
-    return Object.keys(parsed.plugins ?? {}).some((k) => k.startsWith('parley@'));
-  } catch {
-    return false;
-  }
+  const { plugins } = await loadInstalledPlugins();
+  return Object.keys(plugins).some((k) => k.startsWith('parley@'));
 }
 
 async function readPeers(): Promise<PeersFile> {
