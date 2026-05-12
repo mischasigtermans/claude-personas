@@ -29,7 +29,7 @@ interface PeersFile {
  * type: "persona" -- don't clobber user-curated peers.
  */
 export async function syncParleyOnEnable(persona: PersonaMeta): Promise<void> {
-  if (!(await parleyInstalled())) return;
+  if (!(await isParleyInstalled())) return;
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
     const existing = file.peers[persona.name];
@@ -44,7 +44,7 @@ export async function syncParleyOnEnable(persona: PersonaMeta): Promise<void> {
       path: persona.path,
       description: persona.description,
       model: persona.model,
-      mcpServers: persona.mcpServers,
+      mcpServers: isPlainObject(persona.mcpServers) ? persona.mcpServers : undefined,
       skipPermissions: true,
       type: 'persona',
     };
@@ -57,7 +57,7 @@ export async function syncParleyOnEnable(persona: PersonaMeta): Promise<void> {
  * Silent no-op if parley isn't installed or the entry was user-managed.
  */
 export async function syncParleyOnDisable(name: string): Promise<void> {
-  if (!(await parleyInstalled())) return;
+  if (!(await isParleyInstalled())) return;
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
     const existing = file.peers[name];
@@ -68,10 +68,19 @@ export async function syncParleyOnDisable(name: string): Promise<void> {
   });
 }
 
-async function parleyInstalled(): Promise<boolean> {
+/**
+ * Detect parley via the Claude Code plugin registry. peers.json existence
+ * is the wrong signal: if parley is installed but hasn't run yet, the file
+ * doesn't exist and we'd silently no-op forever.
+ */
+async function isParleyInstalled(): Promise<boolean> {
   try {
-    await readFile(peersFile(), 'utf8');
-    return true;
+    const raw = await readFile(
+      join(homedir(), '.claude', 'plugins', 'installed_plugins.json'),
+      'utf8',
+    );
+    const parsed = JSON.parse(raw) as { plugins?: Record<string, unknown> };
+    return Object.keys(parsed.plugins ?? {}).some((k) => k.startsWith('parley@'));
   } catch {
     return false;
   }
@@ -143,6 +152,10 @@ async function tryReclaimStaleLock(lockPath: string): Promise<boolean> {
 
 function isErrno(err: unknown, code: string): boolean {
   return typeof err === 'object' && err !== null && (err as { code?: string }).code === code;
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
 function sleep(ms: number): Promise<void> {

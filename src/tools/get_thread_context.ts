@@ -30,7 +30,7 @@ export const personasGetThreadContext: ToolDef = {
     return JSON.stringify({
       persona_name: p.name,
       persona_path: p.path,
-      persona_entry_file: p.source === 'plugin' ? 'CLAUDE.md' : 'persona.md',
+      persona_entry_file: p.entryFile,
       project_id: pid,
       memory_path: paths.memoryFile(pid, p.name),
       thread_path: paths.threadFile(pid, p.name, open.thread_id),

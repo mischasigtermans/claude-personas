@@ -14143,7 +14143,7 @@ function isEnoent(err) {
 }
 
 // src/state/persona.ts
-import { readFile as readFile2, readdir, stat } from "node:fs/promises";
+import { readFile as readFile2, readdir } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import { join as join2 } from "node:path";
 async function listPersonas() {
@@ -14209,6 +14209,7 @@ async function readPersonaDir(dir) {
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
       source: "external",
+      entryFile: "persona.md",
       path: dir
     };
   } catch {
@@ -14253,8 +14254,9 @@ async function readPersonaJson(pluginRoot2) {
       description: typeof json.description === "string" ? json.description : undefined,
       tools: toStringArray(json.tools),
       traits: toStringArray(json.traits),
-      mcpServers: typeof json.mcpServers === "object" && json.mcpServers !== null ? json.mcpServers : undefined,
+      mcpServers: typeof json.mcpServers === "object" && json.mcpServers !== null && !Array.isArray(json.mcpServers) ? json.mcpServers : undefined,
       source: "plugin",
+      entryFile: "CLAUDE.md",
       path: pluginRoot2,
       pluginRoot: pluginRoot2
     };
@@ -14389,7 +14391,7 @@ var parleyDir = () => process.env.PARLEY_DIR ?? join3(homedir3(), ".claude", "pa
 var peersFile = () => join3(parleyDir(), "peers.json");
 var peersLockFile = () => `${peersFile()}.lock`;
 async function syncParleyOnEnable(persona) {
-  if (!await parleyInstalled())
+  if (!await isParleyInstalled())
     return;
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
@@ -14403,7 +14405,7 @@ async function syncParleyOnEnable(persona) {
       path: persona.path,
       description: persona.description,
       model: persona.model,
-      mcpServers: persona.mcpServers,
+      mcpServers: isPlainObject3(persona.mcpServers) ? persona.mcpServers : undefined,
       skipPermissions: true,
       type: "persona"
     };
@@ -14411,7 +14413,7 @@ async function syncParleyOnEnable(persona) {
   });
 }
 async function syncParleyOnDisable(name) {
-  if (!await parleyInstalled())
+  if (!await isParleyInstalled())
     return;
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
@@ -14424,10 +14426,11 @@ async function syncParleyOnDisable(name) {
     await writePeers(file);
   });
 }
-async function parleyInstalled() {
+async function isParleyInstalled() {
   try {
-    await readFile3(peersFile(), "utf8");
-    return true;
+    const raw = await readFile3(join3(homedir3(), ".claude", "plugins", "installed_plugins.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    return Object.keys(parsed.plugins ?? {}).some((k) => k.startsWith("parley@"));
   } catch {
     return false;
   }
@@ -14494,6 +14497,9 @@ async function tryReclaimStaleLock(lockPath) {
 }
 function isErrno(err, code) {
   return typeof err === "object" && err !== null && err.code === code;
+}
+function isPlainObject3(v) {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14715,7 +14721,7 @@ var personasBeginTurn = {
     return JSON.stringify({
       persona_name: p.name,
       persona_path: p.path,
-      persona_entry_file: p.source === "plugin" ? "CLAUDE.md" : "persona.md",
+      persona_entry_file: p.entryFile,
       project_id: pid,
       memory_path: paths.memoryFile(pid, p.name),
       thread_path: paths.threadFile(pid, p.name, open.thread_id),
@@ -14753,7 +14759,7 @@ var personasGetThreadContext = {
     return JSON.stringify({
       persona_name: p.name,
       persona_path: p.path,
-      persona_entry_file: p.source === "plugin" ? "CLAUDE.md" : "persona.md",
+      persona_entry_file: p.entryFile,
       project_id: pid,
       memory_path: paths.memoryFile(pid, p.name),
       thread_path: paths.threadFile(pid, p.name, open.thread_id),
@@ -14958,7 +14964,7 @@ var personasThreads = {
 };
 
 // src/tools/add.ts
-import { mkdir as mkdir6, readFile as readFile7, rm, symlink, stat as stat2 } from "node:fs/promises";
+import { mkdir as mkdir6, readFile as readFile7, rm, symlink, stat } from "node:fs/promises";
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
 import { basename, isAbsolute, join as join4 } from "node:path";
@@ -15030,7 +15036,7 @@ function inferName(source) {
 }
 async function exists(path) {
   try {
-    await stat2(path);
+    await stat(path);
     return true;
   } catch {
     return false;
