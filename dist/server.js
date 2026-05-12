@@ -14394,7 +14394,7 @@ async function syncParleyOnEnable(persona) {
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
     const existing = file.peers[persona.name];
-    if (existing && existing.managedBy !== "personas") {
+    if (existing && existing.type !== "persona") {
       process.stderr.write(`parley-sync: peer "${persona.name}" is user-managed; not overwriting. ` + `Remove it from peers.json first if you want personas to manage it.
 `);
       return;
@@ -14405,7 +14405,7 @@ async function syncParleyOnEnable(persona) {
       model: persona.model,
       mcpServers: persona.mcpServers,
       skipPermissions: true,
-      managedBy: "personas"
+      type: "persona"
     };
     await writePeers(file);
   });
@@ -14418,7 +14418,7 @@ async function syncParleyOnDisable(name) {
     const existing = file.peers[name];
     if (!existing)
       return;
-    if (existing.managedBy !== "personas")
+    if (existing.type !== "persona")
       return;
     delete file.peers[name];
     await writePeers(file);

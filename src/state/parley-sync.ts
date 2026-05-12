@@ -15,7 +15,7 @@ interface PeerEntry {
   model?: string;
   mcpServers?: Record<string, unknown>;
   skipPermissions?: boolean;
-  managedBy?: string;
+  type?: string;
 }
 
 interface PeersFile {
@@ -26,14 +26,14 @@ interface PeersFile {
  * Write a parley peer entry mirroring the persona's intended runtime config.
  * Silent no-op if parley isn't installed (peers.json absent).
  * Skip-and-warn if an existing entry at the same alias isn't marked
- * managedBy: "personas" -- don't clobber user-curated peers.
+ * type: "persona" -- don't clobber user-curated peers.
  */
 export async function syncParleyOnEnable(persona: PersonaMeta): Promise<void> {
   if (!(await parleyInstalled())) return;
   await withLock(peersLockFile(), async () => {
     const file = await readPeers();
     const existing = file.peers[persona.name];
-    if (existing && existing.managedBy !== 'personas') {
+    if (existing && existing.type !== 'persona') {
       process.stderr.write(
         `parley-sync: peer "${persona.name}" is user-managed; not overwriting. ` +
           `Remove it from peers.json first if you want personas to manage it.\n`,
@@ -46,7 +46,7 @@ export async function syncParleyOnEnable(persona: PersonaMeta): Promise<void> {
       model: persona.model,
       mcpServers: persona.mcpServers,
       skipPermissions: true,
-      managedBy: 'personas',
+      type: 'persona',
     };
     await writePeers(file);
   });
@@ -62,7 +62,7 @@ export async function syncParleyOnDisable(name: string): Promise<void> {
     const file = await readPeers();
     const existing = file.peers[name];
     if (!existing) return;
-    if (existing.managedBy !== 'personas') return;
+    if (existing.type !== 'persona') return;
     delete file.peers[name];
     await writePeers(file);
   });

@@ -16,7 +16,7 @@ The personas plugin becomes a pure host: it no longer bundles personas. Each per
 - `listPersonas()` scans `~/.claude/plugins/installed_plugins.json` for plugins declaring `persona.json` at their install root, and merges them into the registry alongside external personas.
 - `PersonaMeta.source: 'plugin'` and `PersonaMeta.pluginRoot?: string`.
 - `PERSONA_ENTRY_FILE` returned from `begin_turn` and `get_thread_context`: defaults to `persona.md` for external personas, `CLAUDE.md` for plugin personas. The dispatcher reads `<PERSONA_PATH>/<PERSONA_ENTRY_FILE>` instead of hard-coded `persona.md`.
-- Parley sync: enabling a persona writes a peer entry to `~/.claude/parley/peers.json` with `managedBy: "personas"`. Disabling removes the entry. Silently no-ops when parley isn't installed. User-managed entries (no `managedBy` field, or a different value) are left alone with a stderr advisory; personas-plugin won't clobber them.
+- Parley sync: enabling a persona writes a peer entry to `~/.claude/parley/peers.json` with `type: "persona"`. Disabling removes the entry. Silently no-ops when parley isn't installed. User-managed entries (no `type` field, or a different value) are left alone with a stderr advisory; personas-plugin won't clobber them.
 
 ### Changed
 
@@ -25,7 +25,7 @@ The personas plugin becomes a pure host: it no longer bundles personas. Each per
 
 ### Requires
 
-- parley v0.3.1 (companion release) for `managedBy` field support on `PeerConfig`. With older parley, the marker survives initial write but gets stripped on the next `parley_add` to the same alias.
+- parley v0.3.0 for `PeerConfig.type` support. Older parley would strip the `type` field on the next `parley_add` to the same alias, breaking the sync invariant.
 
 ### Migration
 
