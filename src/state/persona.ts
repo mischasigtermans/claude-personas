@@ -1,27 +1,53 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { paths } from './paths.js';
 
 export interface PersonaMeta {
   name: string;
+  displayName?: string;
   aliases: string[];
   model?: string;
   description?: string;
   tools?: string[];
   traits?: string[];
-  source: 'bundled' | 'external';
+  mcpServers?: Record<string, unknown>;
+  source: 'external' | 'plugin';
   path: string;
+  pluginRoot?: string;
 }
 
 export async function listPersonas(): Promise<PersonaMeta[]> {
-  const out: PersonaMeta[] = [];
-  for (const dir of await safeReaddir(paths.bundledPersonasDir)) {
-    const meta = await readPersonaDir(join(paths.bundledPersonasDir, dir), 'bundled');
-    if (meta) out.push(meta);
-  }
+  const external: PersonaMeta[] = [];
+  const plugins: PersonaMeta[] = [];
+
   for (const dir of await safeReaddir(paths.externalDir)) {
-    const meta = await readPersonaDir(join(paths.externalDir, dir), 'external');
-    if (meta) out.push(meta);
+    const meta = await readPersonaDir(join(paths.externalDir, dir));
+    if (meta) external.push(meta);
+  }
+  for (const p of await loadPluginPersonas()) {
+    plugins.push(p);
+  }
+
+  // Ascending priority: external < plugin. Last write wins.
+  const map = new Map<string, PersonaMeta>();
+  for (const p of external) registerWithAliases(map, p);
+  for (const p of plugins) registerWithAliases(map, p);
+  return uniqueByName([...map.values()]);
+}
+
+function registerWithAliases(m: Map<string, PersonaMeta>, p: PersonaMeta): void {
+  m.set(p.name.toLowerCase(), p);
+  for (const a of p.aliases) m.set(a.toLowerCase(), p);
+}
+
+function uniqueByName(personas: PersonaMeta[]): PersonaMeta[] {
+  const seen = new Set<string>();
+  const out: PersonaMeta[] = [];
+  for (const p of personas) {
+    if (seen.has(p.name)) continue;
+    seen.add(p.name);
+    out.push(p);
   }
   return out;
 }
@@ -44,7 +70,7 @@ export async function resolvePersona(
   return { ambiguous: true, candidates: matches };
 }
 
-async function readPersonaDir(dir: string, source: 'bundled' | 'external'): Promise<PersonaMeta | null> {
+async function readPersonaDir(dir: string): Promise<PersonaMeta | null> {
   const personaFile = join(dir, 'persona.md');
   try {
     const text = await readFile(personaFile, 'utf8');
@@ -57,8 +83,66 @@ async function readPersonaDir(dir: string, source: 'bundled' | 'external'): Prom
       description: typeof fm.description === 'string' ? fm.description : undefined,
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
-      source,
+      source: 'external',
       path: dir,
+    };
+  } catch {
+    return null;
+  }
+}
+
+interface InstalledPlugin {
+  installPath: string;
+}
+
+interface InstalledPluginsFile {
+  plugins: Record<string, InstalledPlugin[]>;
+}
+
+async function loadPluginPersonas(): Promise<PersonaMeta[]> {
+  const file = join(homedir(), '.claude', 'plugins', 'installed_plugins.json');
+  let raw: string;
+  try {
+    raw = await readFile(file, 'utf8');
+  } catch {
+    return [];
+  }
+  let parsed: InstalledPluginsFile;
+  try {
+    parsed = JSON.parse(raw) as InstalledPluginsFile;
+  } catch {
+    return [];
+  }
+  const out: PersonaMeta[] = [];
+  for (const entries of Object.values(parsed.plugins ?? {})) {
+    for (const entry of entries) {
+      const meta = await readPersonaJson(entry.installPath);
+      if (meta) out.push(meta);
+    }
+  }
+  return out;
+}
+
+async function readPersonaJson(pluginRoot: string): Promise<PersonaMeta | null> {
+  try {
+    const text = await readFile(join(pluginRoot, 'persona.json'), 'utf8');
+    const json = JSON.parse(text) as Record<string, unknown>;
+    if (typeof json.name !== 'string' || json.name.length === 0) return null;
+    return {
+      name: json.name,
+      displayName: typeof json.displayName === 'string' ? json.displayName : undefined,
+      aliases: toStringArray(json.aliases),
+      model: typeof json.model === 'string' ? json.model : undefined,
+      description: typeof json.description === 'string' ? json.description : undefined,
+      tools: toStringArray(json.tools),
+      traits: toStringArray(json.traits),
+      mcpServers:
+        typeof json.mcpServers === 'object' && json.mcpServers !== null
+          ? (json.mcpServers as Record<string, unknown>)
+          : undefined,
+      source: 'plugin',
+      path: pluginRoot,
+      pluginRoot,
     };
   } catch {
     return null;

@@ -29,11 +29,7 @@ export const paths = {
   get stateDir() {
     return join(personasDataDir(), 'state');
   },
-  get bundledPersonasDir() {
-    return join(pluginRoot(), 'personas');
-  },
   externalPersonaDir: (name: string) => join(personasDataDir(), 'external', name),
-  bundledPersonaDir: (name: string) => join(pluginRoot(), 'personas', name),
   projectStateDir: (projectId: string) => join(personasDataDir(), 'state', projectId),
   personaStateDir: (projectId: string, persona: string) =>
     join(personasDataDir(), 'state', projectId, persona),
