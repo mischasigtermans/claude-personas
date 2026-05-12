@@ -143,6 +143,7 @@ Once you have a resolved, enabled persona name and a user question:
    ```
    PERSONA: <persona_name>
    PERSONA_PATH: <persona_path>
+   PERSONA_ENTRY_FILE: <persona_entry_file>
    MEMORY_PATH: <memory_path>
    THREAD_PATH: <thread_path>      # or "(new thread)" if is_continuation is false
 
@@ -170,11 +171,12 @@ Don't just relay and stop. Use the reply to advance the user's task. If steve sa
 
 ## Close sequence (shared by `/personas close`, `new`, and silent auto-close)
 
-1. Call `get_thread_context` with the persona's `name` to get `persona_path`, `memory_path`, `thread_path` (errors if no open thread).
+1. Call `get_thread_context` with the persona's `name` to get `persona_path`, `persona_entry_file`, `memory_path`, `thread_path` (errors if no open thread).
 2. Spawn (or `SendMessage`, if the dispatcher is alive in-session) with the close-task prompt:
    ```
    PERSONA: <persona_name>
    PERSONA_PATH: <persona_path>
+   PERSONA_ENTRY_FILE: <persona_entry_file>
    MEMORY_PATH: <memory_path>
    THREAD_PATH: <thread_path>
 
