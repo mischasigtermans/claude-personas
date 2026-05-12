@@ -1,5 +1,6 @@
 import { setEnabled } from '../state/config.js';
 import { resolvePersona } from '../state/persona.js';
+import { syncParleyOnDisable, syncParleyOnEnable } from '../state/parley-sync.js';
 import { requireString, type ToolDef } from './types.js';
 
 export const personasEnable: ToolDef = {
@@ -22,6 +23,7 @@ export const personasEnable: ToolDef = {
     }
     const p = result.match;
     await setEnabled(p.name, true);
+    await syncParleyOnEnable(p);
     const aliases = p.aliases.length > 0 ? ` (${p.aliases.join(', ')})` : '';
     return `Enabled: ${p.name}${aliases}`;
   },
@@ -44,6 +46,7 @@ export const personasDisable: ToolDef = {
       throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(', ')}`);
     }
     await setEnabled(result.match.name, false);
+    await syncParleyOnDisable(result.match.name);
     return `Disabled: ${result.match.name}`;
   },
 };
