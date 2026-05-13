@@ -4,7 +4,7 @@
 [![Personas](https://img.shields.io/badge/personas-4-blue)](https://github.com/mischasigtermans/claude-personas#personas)
 [![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../LICENSE)
 
-Persona advisors built from research, not LLM improv.
+Channel personas, expert advisors, from any Claude Code session.
 
 The Personas plugin is the dispatcher and state machine for persona-flagged plugins. It detects installed persona plugins, routes natural-language asks ('ask steve what he thinks'), runs the per-project thread and memory state machine, and registers each enabled persona as a parley peer so cross-project advice works too.
 

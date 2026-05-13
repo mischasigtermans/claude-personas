@@ -1,7 +1,7 @@
 {
   "name": "personas",
   "version": "0.2.0",
-  "description": "Persona advisors built from research, not LLM improv.",
+  "description": "Channel personas, expert advisors, from any Claude Code session.",
   "author": { "name": "Mischa Sigtermans" },
   "homepage": "https://github.com/mischasigtermans/claude-personas/tree/main/manager",
   "repository": "https://github.com/mischasigtermans/claude-personas",
