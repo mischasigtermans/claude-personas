@@ -1,0 +1,10 @@
+{
+  "name": "taylor-otwell",
+  "version": "0.1.0",
+  "description": "Channels Taylor Otwell's Laravel philosophy. Reviews code for elegance and simplicity.",
+  "author": { "name": "Mischa Sigtermans" },
+  "homepage": "https://github.com/mischasigtermans/claude-personas/tree/main/personas/taylor-otwell",
+  "repository": "https://github.com/mischasigtermans/claude-personas",
+  "license": "MIT",
+  "keywords": ["persona", "advisor", "laravel", "php", "code-review"]
+}

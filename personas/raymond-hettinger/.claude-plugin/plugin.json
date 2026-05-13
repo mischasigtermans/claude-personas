@@ -1,0 +1,10 @@
+{
+  "name": "raymond-hettinger",
+  "version": "0.1.0",
+  "description": "Channels Raymond Hettinger's Pythonic philosophy. Reviews code for elegance and idiom.",
+  "author": { "name": "Mischa Sigtermans" },
+  "homepage": "https://github.com/mischasigtermans/claude-personas/tree/main/personas/raymond-hettinger",
+  "repository": "https://github.com/mischasigtermans/claude-personas",
+  "license": "MIT",
+  "keywords": ["persona", "advisor", "python", "code-review", "idiomatic"]
+}
