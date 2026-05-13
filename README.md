@@ -65,7 +65,7 @@ When you add the [Personas manager](manager/), every persona also gains project-
 
 ## Advanced personas
 
-The four personas here are single-expert advisors that live entirely in their plugin directory. The format also supports more substantial shapes:
+Each persona here is a single-expert advisor that lives entirely in its plugin directory. The format also supports more substantial shapes:
 
 - **Tool-backed personas.** A persona can ship its own CLI, a vector database with embedded reference material, or an MCP server for domain-specific actions. The persona doesn't just answer; it operates.
 - **Composite personas.** Built from multiple contributing experts so the persona triangulates rather than impersonates. Useful for domains where no single voice is canonical.

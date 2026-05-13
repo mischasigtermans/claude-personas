@@ -69,10 +69,7 @@ Optional. Slash commands scoped to your persona. Steve has `/steve-jobs:hello`, 
 
 ## Templates
 
-Fork any of the four personas in this repo:
-
-- [steve-jobs](../../personas/steve-jobs/): commands + rules + context + skills, fuller shape.
-- [taylor-otwell](../../personas/taylor-otwell/), [raymond-hettinger](../../personas/raymond-hettinger/), [david-tolnay](../../personas/david-tolnay/): leaner shape (CLAUDE.md + context + skills).
+Fork any persona under [personas/](../../personas/) as a starting point. Steve Jobs ships the fuller shape (commands, rules, context, skills); the others use a leaner shape (CLAUDE.md, context, skills).
 
 ## Publishing
 

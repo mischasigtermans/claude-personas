@@ -59,7 +59,7 @@ You can also be explicit:
 
 ## Related
 
-- **[Claude Personas](https://github.com/mischasigtermans/claude-personas)** hosts this manager alongside four personas (Steve Jobs, Taylor Otwell, Raymond Hettinger, David Tolnay).
+- **[Claude Personas](https://github.com/mischasigtermans/claude-personas)** hosts this manager alongside a growing set of persona plugins.
 - **[Parley](https://github.com/mischasigtermans/claude-parley)** is the cross-session transport. Personas can't run without it.
 
 ## Changelog
