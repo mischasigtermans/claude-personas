@@ -7,8 +7,8 @@
 
 ## Context
 - Always `.context()` or `.with_context()` on IO operations
-- Bare `?` on `std::fs::read()` produces "No such file or directory" — useless
-- `.with_context(|| format!("failed to read {}", path.display()))` — useful
+- Bare `?` on `std::fs::read()` produces "No such file or directory", useless
+- `.with_context(|| format!("failed to read {}", path.display()))`, useful
 - Context chains: high-level operation → mid-level step → low-level cause
 
 ## thiserror Patterns
@@ -26,10 +26,10 @@
 - `anyhow::ensure!(condition, "message")` for assertion-style checks
 
 ## Anti-Patterns
-- `Box<dyn Error>` in public library APIs — callers can't match variants
+- `Box<dyn Error>` in public library APIs, callers can't match variants
 - Umbrella error enum with 15 variants for a module with 3 functions
 - Manual Display + Error + From impls when thiserror works
-- `.map_err(|e| format!("{}", e))` — loses the error chain
+- `.map_err(|e| format!("{}", e))`, loses the error chain
 - Catching and re-wrapping every error manually instead of using `?`
 
 ## When to Use What

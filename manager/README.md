@@ -1,6 +1,7 @@
 # Personas
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/manager/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/manager)
+[![Personas](https://img.shields.io/badge/personas-4-blue)](https://github.com/mischasigtermans/claude-personas#personas)
 [![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../LICENSE)
 
 Persona advisors built from research, not LLM improv.
@@ -68,7 +69,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- [Mischa Sigtermans](https://github.com/mischasigtermans)
+- [Mischa Sigtermans](https://mischa.sigtermans.me)
 
 ## License
 

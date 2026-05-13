@@ -7,7 +7,7 @@
 - Prefer `collections.defaultdict` for repeated defaults
 - Use `dict.pop(key, None)` for safe removal
 - Merge with `{**a, **b}` or `a | b` (3.9+)
-- Use `dict.items()` for iteration—not `.keys()` + lookup
+- Use `dict.items()` for iteration, not `.keys()` + lookup
 
 ## Sets for Membership
 
@@ -22,7 +22,7 @@
 - Use `frozen=True` for immutable dataclasses
 - `namedtuple` for simple immutable records
 - `typing.NamedTuple` for typed named tuples
-- Avoid dicts for structured data—use dataclasses
+- Avoid dicts for structured data, use dataclasses
 
 ## Collections Module
 
@@ -33,8 +33,8 @@
 
 ## Common Anti-Patterns
 
-- Using list for membership checks—O(n) vs set O(1)
-- Nested dicts for structured data—use dataclass
-- Manual counting loops—use `Counter`
-- Mutable default arguments—never `def f(items=[])`
-- Building dict from parallel lists—use `zip()`
+- Using list for membership checks, O(n) vs set O(1)
+- Nested dicts for structured data, use dataclass
+- Manual counting loops, use `Counter`
+- Mutable default arguments, never `def f(items=[])`
+- Building dict from parallel lists, use `zip()`

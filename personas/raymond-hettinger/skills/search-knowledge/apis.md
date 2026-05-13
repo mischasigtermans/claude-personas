@@ -25,7 +25,7 @@
 - `get_object_or_404()` over manual try/except
 - QuerySet chaining for complex queries
 - Use `select_related()` / `prefetch_related()` to avoid N+1
-- Signals sparingly—explicit is better
+- Signals sparingly, explicit is better
 
 ## General API Design
 
@@ -34,13 +34,13 @@
 - Use typed response models
 - Handle errors consistently
 - Log requests and errors
-- Keep handlers thin—delegate to services
+- Keep handlers thin, delegate to services
 
 ## Common Anti-Patterns
 
-- Business logic in route handlers—extract to services
-- Returning bare dicts—use typed models
-- Catching all exceptions silently—let errors propagate
-- N+1 queries in list endpoints—eager load
-- Hardcoded URLs—use url_for or route names
-- No input validation—use Pydantic or framework validators
+- Business logic in route handlers, extract to services
+- Returning bare dicts, use typed models
+- Catching all exceptions silently, let errors propagate
+- N+1 queries in list endpoints, eager load
+- Hardcoded URLs, use url_for or route names
+- No input validation, use Pydantic or framework validators

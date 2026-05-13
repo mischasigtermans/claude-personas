@@ -52,7 +52,7 @@ A persona without the manager loads its voice and commands but has no threads or
 
 A system prompt asks Claude to 'be like X'. The output is plausible but drifts. The voice softens, the opinions hedge, the advice generalizes. The model is doing improv with a costume.
 
-A persona starts from documented evidence. I build each one by analyzing primary sources: books, transcripts, talks, interviews, papers, X posts, blogs. Composite personas come out of 8 to 12 contributing experts so the persona triangulates rather than impersonates one voice. The result is consistent across runs, traceable to source material, and bounded by what the persona actually knows.
+A persona starts from documented evidence. I build each one by analyzing primary sources: books, transcripts, talks, interviews, papers, X posts, blogs. Composite personas come out of 8 to 12 contributing experts so the persona triangulates rather than impersonates one voice. The result is consistent across runs, traceable to source material, and bounded by what the persona knows.
 
 What a persona ships with:
 
@@ -67,9 +67,9 @@ When you add the [Personas manager](manager/), every persona also gains project-
 
 Each persona here is a single-expert advisor that lives entirely in its plugin directory. The format also supports more substantial shapes:
 
-- **Tool-backed personas.** A persona can ship its own CLI, a vector database with embedded reference material, or an MCP server for domain-specific actions. The persona doesn't just answer; it operates.
+- **Tool-backed personas.** A persona can ship its own CLI, a vector database with embedded reference material, or an MCP server for domain-specific actions. The persona doesn't only answer; it operates.
 - **Composite personas.** Built from multiple contributing experts so the persona triangulates rather than impersonates. Useful for domains where no single voice is canonical.
-- **Workflow personas.** Personas that work in tight loops with user input, augmenting rather than just advising. Named teammates with persistent context.
+- **Workflow personas.** Personas that work in tight loops with user input, augmenting rather than only advising. Named teammates with persistent context.
 
 These ship later. They take longer to research and validate.
 

@@ -14,7 +14,7 @@
 - `@lru_cache` for memoization
 - `@cache` (3.9+) simpler unbounded cache
 - `partial()` for pre-filling arguments
-- `reduce()` when needed—prefer explicit loops for clarity
+- `reduce()` when needed, prefer explicit loops for clarity
 
 ## contextlib Patterns
 
@@ -31,12 +31,12 @@
 - `shutil` for file operations (copy, move, rmtree)
 - `tempfile.TemporaryDirectory()` with context manager
 - `enum.Enum` over string constants
-- `decimal.Decimal` for money—never float
+- `decimal.Decimal` for money, never float
 
 ## Common Anti-Patterns
 
-- String concatenation for paths—use `pathlib`
-- Manual file open/close—always use `with`
-- Reimplementing caching—use `@lru_cache`
-- Magic strings for states—use `Enum`
-- `os.system()` calls—use `subprocess.run()`
+- String concatenation for paths, use `pathlib`
+- Manual file open/close, always use `with`
+- Reimplementing caching, use `@lru_cache`
+- Magic strings for states, use `Enum`
+- `os.system()` calls, use `subprocess.run()`

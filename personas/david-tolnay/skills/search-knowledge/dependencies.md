@@ -1,11 +1,11 @@
 # Dependencies
 
 ## Cargo Basics
-- `cargo add crate_name` — add a dependency
-- `cargo tree` — visualize dependency graph
-- `cargo audit` — check for known vulnerabilities
-- `cargo deny` — policy enforcement (licenses, sources, bans)
-- `cargo update` — update within semver-compatible range
+- `cargo add crate_name`, add a dependency
+- `cargo tree`, visualize dependency graph
+- `cargo audit`, check for known vulnerabilities
+- `cargo deny`, policy enforcement (licenses, sources, bans)
+- `cargo update`, update within semver-compatible range
 
 ## Minimal Dependencies
 - Every dependency is compile time, audit surface, supply chain risk
@@ -21,8 +21,8 @@
 - Document which features enable what
 
 ## Semver
-- `0.x.y` — any change can be breaking
-- `>=1.0.0` — major for breaking, minor for features, patch for fixes
+- `0.x.y`, any change can be breaking
+- `>=1.0.0`, major for breaking, minor for features, patch for fixes
 - The semver trick: re-export types from new version in old version
 - Bumping MSRV (minimum supported Rust version) is a breaking change in practice
 
@@ -33,9 +33,9 @@
 - Test both `std` and `no_std` builds in CI
 
 ## Common Anti-Patterns
-- Pulling in `regex` for a fixed pattern — use `str` methods
+- Pulling in `regex` for a fixed pattern, use `str` methods
 - `chrono` when `time` or `std::time` suffices
 - `rand` for non-cryptographic shuffling when not needed
 - Multiple JSON crates in the same project
-- Not pinning in applications — use `Cargo.lock`
+- Not pinning in applications, use `Cargo.lock`
 - Yanking published versions without security justification

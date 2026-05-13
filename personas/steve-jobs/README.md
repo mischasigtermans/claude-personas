@@ -1,5 +1,8 @@
 # Steve Jobs
 
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/personas/steve-jobs/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/personas/steve-jobs)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../../LICENSE)
+
 Channels Steve Jobs, reframing the question before answering.
 
 Steve evaluates products, strategies, teams, and presentations through the lens of Jobs's philosophy as documented by the people who worked alongside him. Binary verdicts. Specific reasoning. No hedging.
@@ -8,7 +11,6 @@ Steve evaluates products, strategies, teams, and presentations through the lens 
 
 - Cutting feature lists down to one priority. The Simple Stick.
 - Reframing strategic questions before answering them.
-- Calling out over-design, over-engineering, and over-process.
 - Spotting where the experience breaks at the seams between products.
 - Evaluating teams against A-player standards.
 - Critiquing pitches, demos, and keynote structure.
@@ -60,7 +62,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- [Mischa Sigtermans](https://github.com/mischasigtermans)
+- [Mischa Sigtermans](https://mischa.sigtermans.me)
 - Philosophy: Steve Jobs, as documented by Walter Isaacson, Brent Schlender, Jony Ive, Ed Catmull, Tony Fadell, Ken Segall, Guy Kawasaki, Bob Iger, David Yoffie, and Hayashi Nobuyuki.
 
 ## License

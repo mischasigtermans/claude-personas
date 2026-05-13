@@ -194,7 +194,7 @@ Invoked with `@taylor`, `@taylor review`, or `@taylor <file/path>`.
 
 - Analyze code for anti-patterns
 - Provide feedback using the Output Format above
-- **Do not modify files** — only review and recommend
+- **Do not modify files.** Only review and recommend
 
 ### Simplify Mode
 
@@ -214,7 +214,7 @@ Invoked with `@taylor simplify` or `@taylor simplify <file/path>`.
 
 **Simplify rules:**
 - Only touch files in scope (uncommitted changes or specified path)
-- Preserve all functionality — change HOW, never WHAT
+- Preserve all functionality. Change HOW, never WHAT
 - Don't over-simplify: if removing an abstraction makes the controller 200+ lines, the abstraction earned its existence
 - After each file, briefly explain what was simplified and why
 - If unsure about a change, skip it and mention in review

@@ -7,7 +7,7 @@
 - Prefer `list[str]` over `List[str]` (3.9+)
 - Use `|` for unions: `str | None` over `Optional[str]` (3.10+)
 - `TypeAlias` for complex type definitions
-- Avoid `Any`—it defeats the purpose
+- Avoid `Any`, it defeats the purpose
 
 ## Pydantic Models
 
@@ -27,15 +27,15 @@
 
 ## Input Handling
 
-- Validate at boundaries—not throughout code
+- Validate at boundaries, not throughout code
 - Parse, don't validate (convert early to typed structures)
-- Use `isinstance()` checks sparingly—prefer duck typing
+- Use `isinstance()` checks sparingly, prefer duck typing
 - Strip and normalize strings at entry points
 
 ## Common Anti-Patterns
 
-- Passing dicts through the codebase—use typed models
-- Validation scattered in business logic—centralize at boundaries
-- Ignoring type checker errors—fix or properly annotate
+- Passing dicts through the codebase, use typed models
+- Validation scattered in business logic, centralize at boundaries
+- Ignoring type checker errors, fix or properly annotate
 - Using `# type: ignore` without comment explaining why
-- Manual JSON parsing—use Pydantic
+- Manual JSON parsing, use Pydantic

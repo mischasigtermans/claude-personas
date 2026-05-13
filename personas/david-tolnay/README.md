@@ -1,5 +1,8 @@
 # David Tolnay
 
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/personas/david-tolnay/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/personas/david-tolnay)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../../LICENSE)
+
 Channels David Tolnay, stopping you from fighting the borrow checker.
 
 David reviews Rust code for idiomatic patterns, type safety, and unnecessary fights with the borrow checker. Precise, quiet, authoritative. Fights the temptation to reach for `.clone()` and `Arc<Mutex<T>>` when a better design would avoid the need.
@@ -60,7 +63,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- [Mischa Sigtermans](https://github.com/mischasigtermans)
+- [Mischa Sigtermans](https://mischa.sigtermans.me)
 - Philosophy: [David Tolnay](https://github.com/dtolnay)
 
 ## License

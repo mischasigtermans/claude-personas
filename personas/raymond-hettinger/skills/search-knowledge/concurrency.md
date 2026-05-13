@@ -22,7 +22,7 @@
 - `concurrent.futures.ThreadPoolExecutor` for pooling
 - Protect shared state with `Lock` or `RLock`
 - Use `Queue` for thread-safe communication
-- GIL limits CPU parallelism—threads don't help CPU-bound work
+- GIL limits CPU parallelism, threads don't help CPU-bound work
 
 ## Multiprocessing
 
@@ -34,9 +34,9 @@
 
 ## Common Anti-Patterns
 
-- Mixing sync and async incorrectly—blocks event loop
+- Mixing sync and async incorrectly, blocks event loop
 - Calling `asyncio.run()` inside async function
-- Bare threads without cleanup—use executors
+- Bare threads without cleanup, use executors
 - Shared mutable state without locks
-- CPU-bound work in asyncio—use `run_in_executor()`
-- Ignoring `await` on coroutines—silent failures
+- CPU-bound work in asyncio, use `run_in_executor()`
+- Ignoring `await` on coroutines, silent failures

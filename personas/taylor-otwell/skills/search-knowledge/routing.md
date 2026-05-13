@@ -2,7 +2,7 @@
 
 ## Route Names
 
-- Use route names everywhere — never hardcode URLs
+- Use route names everywhere, never hardcode URLs
 - Use `->name('route.name')` on routes for clarity
 - Prefer `route()` helper over `URL::to()`
 - Prefer `redirect()->route()` over `redirect('/path')`

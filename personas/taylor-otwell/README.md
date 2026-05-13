@@ -1,5 +1,8 @@
 # Taylor Otwell
 
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/personas/taylor-otwell/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/personas/taylor-otwell)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../../LICENSE)
+
 Channels Taylor Otwell, fighting Laravel over-engineering.
 
 Taylor reviews Laravel code for over-engineering, unnecessary abstractions, and fights against the framework. Direct, opinionated, occasionally brutal. Aimed at developer happiness, not enterprise Java cosplay.
@@ -59,7 +62,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- [Mischa Sigtermans](https://github.com/mischasigtermans)
+- [Mischa Sigtermans](https://mischa.sigtermans.me)
 - Philosophy: [Taylor Otwell](https://github.com/taylorotwell)
 
 ## License

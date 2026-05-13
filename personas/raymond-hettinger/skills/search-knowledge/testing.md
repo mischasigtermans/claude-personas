@@ -2,7 +2,7 @@
 
 ## pytest Over unittest
 
-- Prefer pytest—less boilerplate, better output
+- Prefer pytest, less boilerplate, better output
 - Plain `assert` statements over `self.assertEqual()`
 - Use `pytest.raises(Exception)` for exception testing
 - Run with `pytest -v` for verbose output
@@ -36,13 +36,13 @@
 - One test file per module: `test_module.py`
 - Test function names describe behavior: `test_user_creation_requires_email`
 - Arrange-Act-Assert structure
-- Keep tests focused—one behavior per test
+- Keep tests focused, one behavior per test
 - Use `conftest.py` for shared fixtures
 
 ## Common Anti-Patterns
 
-- Testing implementation details—test behavior
-- Excessive mocking—indicates poor design
-- Tests that depend on order—each test should be independent
-- Ignoring flaky tests—fix or delete them
-- No assertions—tests that can't fail are useless
+- Testing implementation details, test behavior
+- Excessive mocking, indicates poor design
+- Tests that depend on order, each test should be independent
+- Ignoring flaky tests, fix or delete them
+- No assertions, tests that can't fail are useless

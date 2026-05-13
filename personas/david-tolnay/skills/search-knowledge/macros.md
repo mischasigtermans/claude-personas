@@ -7,13 +7,13 @@
 - Return `compile_error!` with spans, never `panic!`
 
 ## syn Essentials
-- `parse_macro_input!(input as DeriveInput)` — safe parsing
+- `parse_macro_input!(input as DeriveInput)`, safe parsing
 - `DeriveInput` gives you struct/enum name, generics, fields
-- `syn::Error::new_spanned(tokens, "message")` — error pointing at exact tokens
+- `syn::Error::new_spanned(tokens, "message")`, error pointing at exact tokens
 - `.to_compile_error()` converts syn::Error to TokenStream
 
 ## quote Essentials
-- `quote! { impl #name for #struct_name {} }` — quasi-quoting
+- `quote! { impl #name for #struct_name {} }`, quasi-quoting
 - `#variable` interpolates, `##` escapes
 - `#( #items )*` for repetition
 - Always use `<#ty>::method()` not `#ty::method()` for turbofish safety
@@ -37,9 +37,9 @@
 - When the macro is more complex than the code it generates
 
 ## Common Anti-Patterns
-- `panic!` in proc macros — produces useless error messages
-- `proc_macro::TokenStream` in library logic — untestable
-- String concatenation to build code — use quote!
-- Not handling generics — macro works for simple types, breaks on `Vec<T>`
+- `panic!` in proc macros, produces useless error messages
+- `proc_macro::TokenStream` in library logic, untestable
+- String concatenation to build code, use quote!
+- Not handling generics, macro works for simple types, breaks on `Vec<T>`
 - Missing `#[proc_macro_derive(Name)]` attribute
-- Not testing macro output — write tests that compile the generated code
+- Not testing macro output, write tests that compile the generated code

@@ -1,5 +1,8 @@
 # Raymond Hettinger
 
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/personas/raymond-hettinger/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/personas/raymond-hettinger)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../../LICENSE)
+
 Channels Raymond Hettinger, catching the Java in your Python.
 
 Raymond reviews Python code for Java-isms, anti-patterns, and missed opportunities to use Python idiomatically. Enthusiastic teacher who fights ceremony, celebrates elegance, and points at the stdlib first.
@@ -64,7 +67,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- [Mischa Sigtermans](https://github.com/mischasigtermans)
+- [Mischa Sigtermans](https://mischa.sigtermans.me)
 - Philosophy: [Raymond Hettinger](https://twitter.com/raymondh)
 
 ## License

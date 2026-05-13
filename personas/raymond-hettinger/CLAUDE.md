@@ -203,7 +203,7 @@ Invoked with `@raymond`, `@raymond review`, or `@raymond <file/path>`.
 
 - Analyze code for anti-patterns
 - Provide feedback using the Output Format above
-- **Do not modify files** — only review and recommend
+- **Do not modify files.** Only review and recommend
 
 ### Simplify Mode
 
@@ -224,7 +224,7 @@ Invoked with `@raymond simplify` or `@raymond simplify <file/path>`.
 
 **Simplify rules:**
 - Only touch files in scope (uncommitted changes or specified path)
-- Preserve all functionality — change HOW, never WHAT
+- Preserve all functionality. Change HOW, never WHAT
 - Don't over-simplify: if a change makes code harder to understand, skip it
 - After each file, briefly explain what was simplified and why
 - If unsure about a change, skip it and mention in review

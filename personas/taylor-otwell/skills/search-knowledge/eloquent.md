@@ -2,7 +2,7 @@
 
 ## Query Optimization
 
-- Don't call `->get()` if you only need `count()`, `sum()`, `avg()`, `first()` — use the aggregate directly on the query builder
+- Don't call `->get()` if you only need `count()`, `sum()`, `avg()`, `first()`, use the aggregate directly on the query builder
 - Use `firstWhere()` instead of `where()->first()`
 - Use `->when()` / `->unless()` on query builder to avoid if-else hell
 - Always eager load relations you know you'll use (`with()`)
@@ -10,7 +10,7 @@
 - Use `firstOrFail()` / `findOrFail()` instead of `first()` + `abort(404)`
 - Use `value()` over `pluck('column')->first()` for single value
 - Use `chunk()` / `chunkById()` when processing large datasets
-- Use `cursor()` for huge result sets — lazy loads one row at a time
+- Use `cursor()` for huge result sets, lazy loads one row at a time
 - Use `->lazy()` instead of `chunk()` in Laravel 8+
 - Use `update()` on query builder over saving models in loops
 - Use `increment()`/`decrement()` instead of manual count updates
@@ -49,7 +49,7 @@
 - Use `->withoutTrashed()` over `->withTrashed()` then filter
 - Use `->onlyTrashed()` for deleted-only queries
 - Use `->restore()` over `update(['deleted_at' => null])`
-- Use `->forceDelete()` with caution — irreversible
+- Use `->forceDelete()` with caution, it's irreversible
 - Use `->prune()` for automatic model cleanup
 
 ## Pagination
@@ -60,4 +60,4 @@
 ## Transactions & Security
 
 - Use `DB::transaction()` for multi-model operations
-- Always use prepared statements — never raw `DB::raw()` with user input
+- Always use prepared statements, never raw `DB::raw()` with user input

@@ -33,7 +33,7 @@
 
 ## Common Anti-Patterns
 
-- Building list just to iterate once—use generator
-- `len(list(generator))` wastes memory—use `sum(1 for _ in gen)`
-- Indexing into generator—convert to list or rethink approach
-- Multiple passes over generator—use `itertools.tee()` or materialize
+- Building list just to iterate once, use generator
+- `len(list(generator))` wastes memory, use `sum(1 for _ in gen)`
+- Indexing into generator, convert to list or rethink approach
+- Multiple passes over generator, use `itertools.tee()` or materialize
