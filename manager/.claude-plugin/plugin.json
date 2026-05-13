@@ -1,8 +1,10 @@
 {
   "name": "personas",
-  "description": "Session-aware persona advisors with project-scoped threads and memory. Hosts Claude Code persona plugins (declaring persona.json at the plugin root) and external git-cloned personas. Auto-registers enabled personas as parley peers when parley is installed.",
   "version": "0.2.0",
+  "description": "Persona advisors built from research, not LLM improv.",
   "author": { "name": "Mischa Sigtermans" },
+  "homepage": "https://github.com/mischasigtermans/claude-personas/tree/main/manager",
   "repository": "https://github.com/mischasigtermans/claude-personas",
-  "keywords": ["personas", "agents", "advisors", "sessions", "memory", "multi-agent"]
+  "license": "MIT",
+  "keywords": ["personas", "agents", "advisors", "memory", "multi-agent"]
 }

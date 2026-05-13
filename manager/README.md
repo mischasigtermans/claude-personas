@@ -1,148 +1,75 @@
-# claude-personas
+# Personas
 
-Session-aware persona advisors for Claude Code. Each persona (Steve Jobs, Taylor Otwell, Raymond Hettinger, David Tolnay, or any you author yourself) becomes a long-lived voice with project-scoped threads and durable memory. Speak naturally: *"ask steve what he thinks"*, *"what would taylor say about this controller?"* Threads persist across CC sessions; closed threads distill into a per-project memory file the persona reloads next time.
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/manager/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/manager)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](../LICENSE)
 
-## What this is for
+Persona advisors built from research, not LLM improv.
 
-**Stop re-introducing yourself.** The standalone `*-says` plugins were stateless: one prompt, one answer, no continuity. The personas plugin turns each persona into an advisor that remembers what you discussed last week, what advice you took, and what's specific to *this* project versus the one in another folder.
-
-**Project-scoped heads.** Same Steve, different head per project. Steve in your Laravel app remembers your launch plan; Steve in your Rust crate remembers the API decisions. Project identity is keyed off your git remote, so worktrees and clones share state.
-
-**One plugin, many personas.** Install `claude-personas` once. Bundled personas ship disabled by default. Opt in with `/personas enable steve-jobs`. Add third-party personas with `/personas add <git-url>`; they're plain repos with a `persona.md`, no Claude plugin scaffolding required.
-
-**Natural-language management.** A `personas` skill detects "ask steve about X" without slash commands, continues open threads automatically, and silently auto-closes resolved threads. Closing distills the persona's takeaways into the memory file before archiving the transcript. `/personas reopen <name>` is the safety valve.
+The Personas plugin is the dispatcher and state machine for persona-flagged plugins. It detects installed persona plugins, routes natural-language asks ('ask steve what he thinks'), runs the per-project thread and memory state machine, and registers each enabled persona as a parley peer so cross-project advice works too.
 
 ## Installation
 
 ```
-# Clone into your plugin directory (until published to a marketplace)
-git clone https://github.com/mischasigtermans/claude-personas
-
-# Or install via your plugin manager
-/plugin install mischasigtermans/claude-personas
+/plugin marketplace add mischasigtermans/by-mischa
+/plugin install personas@by-mischa
 ```
+
+### Requires
+
+- Claude Code
+- [Parley](https://github.com/mischasigtermans/claude-parley) for transport
+- At least one persona plugin to do anything useful, e.g. [steve-jobs](https://github.com/mischasigtermans/claude-personas/tree/main/personas/steve-jobs)
 
 ## Quick start
 
-```
-# See what's available
-/personas list
+Install a persona, enable it, and ask it something in plain language:
 
-# Enable a bundled persona
+```
+/plugin install steve-jobs@by-mischa
 /personas enable steve-jobs
-
-# Then just speak
-"what would steve think about removing this feature?"
-"ask taylor whether this controller is doing too much"
-"raymond, is there a more pythonic way to write this?"
+'ask steve what he thinks about removing this feature'
 ```
+
+The Personas skill picks up the natural-language ask, dispatches to Steve, and threads the conversation. Continued asks stay in the same thread. The thread closes silently when you move on, and Steve writes 3-8 takeaways to a per-project memory file so the next conversation starts from where this one ended.
 
 You can also be explicit:
 
 ```
-/personas ask steve-jobs "Evaluate this product brief..."
-/personas threads               # show open threads in this project
-/personas close steve-jobs      # write takeaways, archive thread
-/personas reopen steve-jobs     # restore the most recent closed thread
+/personas ask steve-jobs 'Evaluate this product brief...'
+/personas threads               # open threads in this project
+/personas close steve-jobs      # close thread, write takeaways
+/personas reopen steve-jobs     # restore the last closed thread
 ```
 
-## Bundled personas
+## Features
 
-| Canonical name | Aliases | Domain |
-|---|---|---|
-| `steve-jobs` | steve, jobs | Product design, leadership, simplicity, craft |
-| `taylor-otwell` | taylor, otwell | Laravel reviews, code elegance |
-| `raymond-hettinger` | raymond, hettinger | Pythonic style, code reviews |
-| `david-tolnay` | david, tolnay | Rust idioms, type safety |
+- Auto-discovery of installed persona plugins via the `persona.json` marker at the plugin root.
+- Natural-language dispatch: 'ask steve what he thinks' routes through the right persona without explicit slash commands.
+- Project-scoped threads: the same persona runs different memory and threads per project, keyed off the git remote.
+- Durable memory: when a thread closes, the persona distills 3-8 takeaways into `memory.md` for next time.
+- Silent auto-close on idle, topic shift, or resolution. `/personas reopen` is the safety valve.
+- Parley sync: enabling a persona registers it as a parley peer so it's reachable across project sessions.
 
-All ship disabled by default. Each bundles its own knowledge files (deep guidance per topic) loaded on demand.
+## Documentation
 
-## How it works
+- [Commands](docs/commands.md): slash commands and MCP tools reference
+- [State](docs/state.md): how threads, memory, and project_id work
+- [Authoring](docs/authoring.md): writing your own persona plugin
+- [Architecture](docs/architecture.md): how the dispatcher, manager, and personas fit together
 
-```
-┌─ skills/personas/           ◀── triggers, dispatch, lifecycle
-│                                  awareness ("ask steve...") + /personas actions
-├─ personas/<name>/           ◀── bundled persona definitions
-│   ├─ persona.md             (YAML frontmatter + system prompt)
-│   ├─ context/               (voice, quotes, personality. Inlined via @)
-│   └─ knowledge/             (deep topical guidance. Read on demand)
-├─ ~/.claude/personas/
-│   ├─ config.json            (enabled set)
-│   ├─ external/<name>/       (third-party personas you /personas add)
-│   └─ state/<project_id>/<persona>/
-│       ├─ memory.md          (durable, distilled)
-│       ├─ open-thread.json   (pointer if a thread is active)
-│       └─ threads/<id>.md    (full transcripts)
-```
+## Related
 
-`project_id` is sha1 of the git remote URL (first 12 chars), with cwd hash as fallback. State lives outside the plugin and survives reinstalls.
+- **[Claude Personas](https://github.com/mischasigtermans/claude-personas)** hosts this manager alongside four personas (Steve Jobs, Taylor Otwell, Raymond Hettinger, David Tolnay).
+- **[Parley](https://github.com/mischasigtermans/claude-parley)** is the cross-session transport. Personas can't run without it.
 
-### Threads vs memory
+## Changelog
 
-- **Thread (active)**. Full transcript, replayed in the persona's context on every continuing turn.
-- **Memory (durable)**. Short bullet list of facts, preferences, and decisions the persona "knows" about this project. Loaded as preamble on every new thread.
+See [CHANGELOG.md](CHANGELOG.md).
 
-When a thread closes (manually or via auto-close heuristic), the persona writes 3–8 bullet takeaways to `memory.md`, then archives the transcript. Reopening a closed thread restores it as the active thread without removing the takeaways.
+## Credits
 
-### Silent auto-close
-
-The skill closes threads on its own when:
-
-- **Idle**: 3 consecutive user turns without involving the persona.
-- **Topic shift / closure cue**: user signals "thanks", "got it", "anyway", or moves to an unrelated topic.
-- **Resolution**: the persona's last reply gave a clear answer and the user moved on.
-
-You'll see a one-line notification: *"Closed steve-jobs thread (idle). `/personas reopen steve-jobs` to restore."* The transcript and takeaways are preserved either way.
-
-## Authoring a persona
-
-A persona is a directory with one required file:
-
-```
-my-persona/
-├── persona.md          (YAML frontmatter + system prompt)
-├── context/            (optional. Inlined via @context/<file>.md)
-└── knowledge/          (optional. Read on demand by the persona)
-```
-
-`persona.md` frontmatter:
-
-```yaml
----
-name: marie-curie
-aliases: [marie, curie]
-model: opus
-description: Channels Marie Curie's empirical rigor and persistence in the face of skepticism.
-tools: [Read, Write, Edit, Glob, Grep, WebSearch]
-traits: [science, rigor, persistence]
----
-
-You are an AI advisor channeling Marie Curie's documented...
-```
-
-Publish it as a git repo, then anyone can install with `/personas add https://github.com/you/marie-curie`.
-
-## Slash commands
-
-| Command | Effect |
-|---|---|
-| `/personas` | Discovery menu. Lists known personas and their status. |
-| `/personas list` | Same as above, always full table. |
-| `/personas enable <name>` | Activate a persona. |
-| `/personas disable <name>` | Deactivate. Open threads are preserved. |
-| `/personas add <git-url-or-path>` | Install an external persona repo. |
-| `/personas remove <name>` | Uninstall an external persona. |
-| `/personas ask <name> <question>` | Explicit ask, bypasses awareness detection. |
-| `/personas threads` | List open threads in this project. |
-| `/personas close <name>` | Close thread, persona writes takeaways. |
-| `/personas new <name>` | Park current thread, start fresh. |
-| `/personas reopen <name>` | Restore the most recently closed thread. |
-
-## Relationship to other plugins
-
-- **Replaces** the standalone `*-says` plugins (taylor-says, raymond-says, david-says, steve-says). Their content is bundled here. The original repos are retired.
-- **Complements** [parley](https://github.com/mischasigtermans/parley): parley is for cross-process IPC between independent CC sessions on different projects. The personas plugin is in-session: same CC process, multiple addressable advisor subagents with their own state. Different problems, different scopes.
+- [Mischa Sigtermans](https://github.com/mischasigtermans)
 
 ## License
 
-MIT.
+MIT. See [../LICENSE](../LICENSE).
