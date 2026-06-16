@@ -13,8 +13,6 @@ export interface PersonaMeta {
   traits?: string[];
   mcpServers?: Record<string, unknown>;
   source: 'external' | 'plugin';
-  /** Filename the dispatcher reads under `path`. Set by the reader; no branching elsewhere. */
-  entryFile: 'persona.md' | 'CLAUDE.md';
   path: string;
   pluginRoot?: string;
 }
@@ -86,7 +84,6 @@ async function readPersonaDir(dir: string): Promise<PersonaMeta | null> {
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
       source: 'external',
-      entryFile: 'persona.md',
       path: dir,
     };
   } catch {
@@ -124,7 +121,6 @@ async function readPersonaJson(pluginRoot: string): Promise<PersonaMeta | null> 
           ? (json.mcpServers as Record<string, unknown>)
           : undefined,
       source: 'plugin',
-      entryFile: 'CLAUDE.md',
       path: pluginRoot,
       pluginRoot,
     };

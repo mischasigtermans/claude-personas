@@ -10345,7 +10345,7 @@ function finalize(ctx, schema) {
     result.$schema = "http://json-schema.org/draft-07/schema#";
   } else if (ctx.target === "draft-04") {
     result.$schema = "http://json-schema.org/draft-04/schema#";
-  } else if (ctx.target === "openapi-3.0") {} else {}
+  } else if (ctx.target === "openapi-3.0") {}
   if (ctx.external?.uri) {
     const id = ctx.external.registry.get(schema)?.id;
     if (!id)
@@ -10563,7 +10563,7 @@ var literalProcessor = (schema, ctx, json, _params) => {
     if (val === undefined) {
       if (ctx.unrepresentable === "throw") {
         throw new Error("Literal `undefined` cannot be represented in JSON Schema");
-      } else {}
+      }
     } else if (typeof val === "bigint") {
       if (ctx.unrepresentable === "throw") {
         throw new Error("BigInt literals cannot be represented in JSON Schema");
@@ -14063,15 +14063,18 @@ class StdioServerTransport {
   }
 }
 
-// src/state/config.ts
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+// src/state/persona.ts
+import { readFile as readFile2, readdir } from "node:fs/promises";
+import { join as join3 } from "node:path";
 
 // src/state/paths.ts
 import { homedir } from "node:os";
 import { join } from "node:path";
 function personasDataDir() {
   return process.env.PERSONAS_DIR ?? join(homedir(), ".claude", "personas");
+}
+function parleyDir() {
+  return process.env.PARLEY_DIR ?? join(homedir(), ".claude", "parley");
 }
 function pluginRoot() {
   const root = process.env.PERSONAS_PLUGIN_ROOT;
@@ -14087,67 +14090,20 @@ var paths = {
   get pluginRoot() {
     return pluginRoot();
   },
-  get configFile() {
-    return join(personasDataDir(), "config.json");
-  },
   get externalDir() {
     return join(personasDataDir(), "external");
   },
-  get stateDir() {
-    return join(personasDataDir(), "state");
-  },
   externalPersonaDir: (name) => join(personasDataDir(), "external", name),
-  projectStateDir: (projectId) => join(personasDataDir(), "state", projectId),
-  personaStateDir: (projectId, persona) => join(personasDataDir(), "state", projectId, persona),
-  threadsDir: (projectId, persona) => join(personasDataDir(), "state", projectId, persona, "threads"),
-  threadFile: (projectId, persona, threadId) => join(personasDataDir(), "state", projectId, persona, "threads", `${threadId}.md`),
-  memoryFile: (projectId, persona) => join(personasDataDir(), "state", projectId, persona, "memory.md"),
-  openThreadFile: (projectId, persona) => join(personasDataDir(), "state", projectId, persona, "open-thread.json"),
-  lastClosedFile: (projectId, persona) => join(personasDataDir(), "state", projectId, persona, "last-closed.json")
+  get parleyExtensionManifest() {
+    return join(parleyDir(), "extensions", "personas.json");
+  },
+  get parleyExtensionsDir() {
+    return join(parleyDir(), "extensions");
+  }
 };
 
-// src/state/config.ts
-var DEFAULT = { enabled: [], version: 1 };
-async function readConfig() {
-  try {
-    const text = await readFile(paths.configFile, "utf8");
-    const parsed = JSON.parse(text);
-    return {
-      enabled: Array.isArray(parsed.enabled) ? parsed.enabled.filter((x) => typeof x === "string") : [],
-      version: typeof parsed.version === "number" ? parsed.version : 1
-    };
-  } catch (err) {
-    if (isEnoent(err))
-      return { ...DEFAULT };
-    throw err;
-  }
-}
-async function writeConfig(config2) {
-  await mkdir(dirname(paths.configFile), { recursive: true });
-  await writeFile(paths.configFile, JSON.stringify(config2, null, 2) + `
-`, "utf8");
-}
-async function setEnabled(name, enabled) {
-  const config2 = await readConfig();
-  const set2 = new Set(config2.enabled);
-  if (enabled)
-    set2.add(name);
-  else
-    set2.delete(name);
-  config2.enabled = [...set2];
-  await writeConfig(config2);
-  return config2;
-}
-function isEnoent(err) {
-  return typeof err === "object" && err !== null && err.code === "ENOENT";
-}
-
-// src/state/persona.ts
-import { readFile as readFile3, readdir } from "node:fs/promises";
-import { join as join3 } from "node:path";
-
 // src/state/installed-plugins.ts
-import { readFile as readFile2 } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import { join as join2 } from "node:path";
 var cache = null;
@@ -14155,7 +14111,7 @@ async function loadInstalledPlugins() {
   if (cache)
     return cache;
   try {
-    const raw = await readFile2(join2(homedir2(), ".claude", "plugins", "installed_plugins.json"), "utf8");
+    const raw = await readFile(join2(homedir2(), ".claude", "plugins", "installed_plugins.json"), "utf8");
     const parsed = JSON.parse(raw);
     cache = { plugins: parsed.plugins ?? {} };
   } catch {
@@ -14216,7 +14172,7 @@ async function resolvePersona(ref) {
 async function readPersonaDir(dir) {
   const personaFile = join3(dir, "persona.md");
   try {
-    const text = await readFile3(personaFile, "utf8");
+    const text = await readFile2(personaFile, "utf8");
     const fm = parseFrontmatter(text);
     if (!fm || typeof fm.name !== "string")
       return null;
@@ -14228,7 +14184,6 @@ async function readPersonaDir(dir) {
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
       source: "external",
-      entryFile: "persona.md",
       path: dir
     };
   } catch {
@@ -14249,7 +14204,7 @@ async function loadPluginPersonas() {
 }
 async function readPersonaJson(pluginRoot2) {
   try {
-    const text = await readFile3(join3(pluginRoot2, "persona.json"), "utf8");
+    const text = await readFile2(join3(pluginRoot2, "persona.json"), "utf8");
     const json = JSON.parse(text);
     if (typeof json.name !== "string" || json.name.length === 0)
       return null;
@@ -14263,7 +14218,6 @@ async function readPersonaJson(pluginRoot2) {
       traits: toStringArray(json.traits),
       mcpServers: typeof json.mcpServers === "object" && json.mcpServers !== null && !Array.isArray(json.mcpServers) ? json.mcpServers : undefined,
       source: "plugin",
-      entryFile: "CLAUDE.md",
       path: pluginRoot2,
       pluginRoot: pluginRoot2
     };
@@ -14305,10 +14259,107 @@ async function safeReaddir(dir) {
     const entries = await readdir(dir, { withFileTypes: true });
     return entries.filter((e) => e.isDirectory() || e.isSymbolicLink()).map((e) => e.name);
   } catch (err) {
-    if (isEnoent2(err))
+    if (isEnoent(err))
       return [];
     throw err;
   }
+}
+function isEnoent(err) {
+  return typeof err === "object" && err !== null && err.code === "ENOENT";
+}
+
+// src/state/manifest.ts
+import { mkdir, readFile as readFile3, rename, writeFile, unlink } from "node:fs/promises";
+import { dirname } from "node:path";
+var MANIFEST_VERSION = "0.3.0";
+var MANIFEST_DESCRIPTION = "Persona advisors with knowledge modules";
+function empty() {
+  return {
+    name: "personas",
+    version: MANIFEST_VERSION,
+    description: MANIFEST_DESCRIPTION,
+    peers: []
+  };
+}
+async function readManifest() {
+  try {
+    const raw = await readFile3(paths.parleyExtensionManifest, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.peers))
+      return empty();
+    return {
+      name: "personas",
+      version: typeof parsed.version === "string" ? parsed.version : MANIFEST_VERSION,
+      description: typeof parsed.description === "string" ? parsed.description : MANIFEST_DESCRIPTION,
+      peers: parsed.peers.filter(isValidEntry)
+    };
+  } catch (err) {
+    if (isEnoent2(err))
+      return empty();
+    throw err;
+  }
+}
+async function writeManifest(m) {
+  await mkdir(paths.parleyExtensionsDir, { recursive: true });
+  if (m.peers.length === 0) {
+    try {
+      await unlink(paths.parleyExtensionManifest);
+    } catch (err) {
+      if (!isEnoent2(err))
+        throw err;
+    }
+    return;
+  }
+  const tmp = `${paths.parleyExtensionManifest}.${process.pid}.${Date.now()}.tmp`;
+  await mkdir(dirname(tmp), { recursive: true });
+  await writeFile(tmp, JSON.stringify(m, null, 2));
+  await rename(tmp, paths.parleyExtensionManifest);
+}
+async function upsertPersona(p) {
+  const m = await readManifest();
+  const allAliases = uniqueLowercase([p.name, ...p.aliases]);
+  const aliasSet = new Set(allAliases);
+  const filtered = m.peers.filter((e) => e.path !== p.path && !aliasSet.has(e.alias));
+  const desc = p.description || `Persona: ${p.displayName ?? p.name}`;
+  const next = [
+    ...filtered,
+    ...allAliases.map((alias) => ({
+      alias,
+      path: p.path,
+      description: desc,
+      type: "persona",
+      model: p.model,
+      mcpServers: isPlainObject3(p.mcpServers) ? p.mcpServers : undefined,
+      skipPermissions: true
+    }))
+  ];
+  await writeManifest({ ...m, peers: next });
+}
+async function removePersona(canonicalName, personaPath) {
+  const m = await readManifest();
+  const next = m.peers.filter((e) => e.path !== personaPath && e.alias !== canonicalName);
+  await writeManifest({ ...m, peers: next });
+}
+function isValidEntry(v) {
+  if (typeof v !== "object" || v === null)
+    return false;
+  const e = v;
+  return typeof e.alias === "string" && typeof e.path === "string";
+}
+function isPlainObject3(v) {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+function uniqueLowercase(values) {
+  const seen = new Set;
+  const out = [];
+  for (const v of values) {
+    const lc = v.toLowerCase();
+    if (seen.has(lc))
+      continue;
+    seen.add(lc);
+    out.push(lc);
+  }
+  return out;
 }
 function isEnoent2(err) {
   return typeof err === "object" && err !== null && err.code === "ENOENT";
@@ -14317,23 +14368,23 @@ function isEnoent2(err) {
 // src/tools/list.ts
 var personasList = {
   name: "list",
-  description: "List all known personas (bundled + external) with their enabled status, aliases, description, and source path.",
+  description: "List installed personas with their enabled state. Enabled personas are those written into the parley extensions manifest (~/.claude/parley/extensions/personas.json). All other personas are installed but not yet enabled.",
   inputSchema: {
     type: "object",
     properties: {},
     additionalProperties: false
   },
   handler: async () => {
-    const config2 = await readConfig();
-    const enabled = new Set(config2.enabled);
-    const personas = await listPersonas();
-    const out = personas.map((p) => ({
+    const installed = await listPersonas();
+    const manifest = await readManifest();
+    const enabledPaths = new Set(manifest.peers.map((p) => p.path));
+    const out = installed.map((p) => ({
       name: p.name,
       aliases: p.aliases,
-      enabled: enabled.has(p.name),
       description: p.description ?? "",
       source: p.source,
-      path: p.path
+      path: p.path,
+      enabled: enabledPaths.has(p.path)
     }));
     return JSON.stringify(out, null, 2);
   }
@@ -14351,7 +14402,7 @@ function requireString(args, key) {
 // src/tools/resolve.ts
 var personasResolve = {
   name: "resolve",
-  description: "Resolve a name or alias to a canonical persona. Returns canonical name, source path, enabled status, aliases, and description. On collision, returns ambiguous: true with candidates.",
+  description: "Resolve a name or alias to a canonical persona. Returns canonical name, source path, enabled status (whether it is in the parley extensions manifest), aliases, and description. On collision, returns ambiguous: true with candidates.",
   inputSchema: {
     type: "object",
     properties: { ref: { type: "string", description: "Persona name or alias" } },
@@ -14360,8 +14411,8 @@ var personasResolve = {
   },
   handler: async (args) => {
     const ref = requireString(args, "ref");
-    const config2 = await readConfig();
-    const enabled = new Set(config2.enabled);
+    const manifest = await readManifest();
+    const enabledPaths = new Set(manifest.peers.map((p2) => p2.path));
     const result = await resolvePersona(ref);
     if (!result) {
       return JSON.stringify({ found: false, ref });
@@ -14373,7 +14424,7 @@ var personasResolve = {
           name: p2.name,
           aliases: p2.aliases,
           source: p2.source,
-          enabled: enabled.has(p2.name)
+          enabled: enabledPaths.has(p2.path)
         }))
       });
     }
@@ -14382,7 +14433,7 @@ var personasResolve = {
       found: true,
       name: p.name,
       aliases: p.aliases,
-      enabled: enabled.has(p.name),
+      enabled: enabledPaths.has(p.path),
       description: p.description ?? "",
       source: p.source,
       path: p.path
@@ -14390,127 +14441,10 @@ var personasResolve = {
   }
 };
 
-// src/state/parley-sync.ts
-import { homedir as homedir3 } from "node:os";
-import { join as join4, dirname as dirname2 } from "node:path";
-import { mkdir as mkdir2, readFile as readFile4, writeFile as writeFile2, unlink, rename } from "node:fs/promises";
-var parleyDir = () => process.env.PARLEY_DIR ?? join4(homedir3(), ".claude", "parley");
-var peersFile = () => join4(parleyDir(), "peers.json");
-var peersLockFile = () => `${peersFile()}.lock`;
-async function syncParleyOnEnable(persona) {
-  if (!await isParleyInstalled())
-    return;
-  await withLock(peersLockFile(), async () => {
-    const file = await readPeers();
-    const existing = file.peers[persona.name];
-    if (existing && existing.type !== "persona") {
-      process.stderr.write(`parley-sync: peer "${persona.name}" is user-managed; not overwriting. ` + `Remove it from peers.json first if you want personas to manage it.
-`);
-      return;
-    }
-    file.peers[persona.name] = {
-      path: persona.path,
-      description: persona.description,
-      model: persona.model,
-      mcpServers: isPlainObject3(persona.mcpServers) ? persona.mcpServers : undefined,
-      skipPermissions: true,
-      type: "persona"
-    };
-    await writePeers(file);
-  });
-}
-async function syncParleyOnDisable(name) {
-  if (!await isParleyInstalled())
-    return;
-  await withLock(peersLockFile(), async () => {
-    const file = await readPeers();
-    const existing = file.peers[name];
-    if (!existing)
-      return;
-    if (existing.type !== "persona")
-      return;
-    delete file.peers[name];
-    await writePeers(file);
-  });
-}
-async function isParleyInstalled() {
-  const { plugins } = await loadInstalledPlugins();
-  return Object.keys(plugins).some((k) => k.startsWith("parley@"));
-}
-async function readPeers() {
-  try {
-    const raw = await readFile4(peersFile(), "utf8");
-    const parsed = JSON.parse(raw);
-    return { peers: parsed.peers ?? {} };
-  } catch {
-    return { peers: {} };
-  }
-}
-async function writePeers(file) {
-  await mkdir2(dirname2(peersFile()), { recursive: true });
-  const tmp = `${peersFile()}.${process.pid}.${Date.now()}.tmp`;
-  await writeFile2(tmp, JSON.stringify(file, null, 2));
-  await rename(tmp, peersFile());
-}
-async function withLock(lockPath, fn) {
-  const timeoutMs = 30000;
-  const pollMs = 100;
-  const deadline = Date.now() + timeoutMs;
-  await mkdir2(dirname2(lockPath), { recursive: true });
-  while (true) {
-    try {
-      await writeFile2(lockPath, String(process.pid), { flag: "wx" });
-      break;
-    } catch (err) {
-      if (!isErrno(err, "EEXIST"))
-        throw err;
-      if (await tryReclaimStaleLock(lockPath))
-        continue;
-      if (Date.now() > deadline)
-        throw new Error(`parley-sync: lock timeout at ${lockPath}`);
-      await sleep(pollMs);
-    }
-  }
-  try {
-    return await fn();
-  } finally {
-    await unlink(lockPath).catch(() => {});
-  }
-}
-async function tryReclaimStaleLock(lockPath) {
-  let pid;
-  try {
-    const contents = (await readFile4(lockPath, "utf8")).trim();
-    pid = parseInt(contents, 10);
-    if (!Number.isFinite(pid) || pid <= 0)
-      return false;
-  } catch {
-    return false;
-  }
-  if (pid === process.pid)
-    return false;
-  try {
-    process.kill(pid, 0);
-    return false;
-  } catch {
-    await unlink(lockPath).catch(() => {});
-    return true;
-  }
-}
-function isErrno(err, code) {
-  return typeof err === "object" && err !== null && err.code === code;
-}
-function isPlainObject3(v) {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 // src/tools/enable.ts
 var personasEnable = {
   name: "enable",
-  description: "Enable a persona by canonical name or alias.",
+  description: "Enable a persona by canonical name or alias. Writes the persona (and all its aliases) into the parley extensions manifest at ~/.claude/parley/extensions/personas.json so parley_ask routes to it without a manual parley_add.",
   inputSchema: {
     type: "object",
     properties: { name: { type: "string" } },
@@ -14526,15 +14460,14 @@ var personasEnable = {
       throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}. Use the full canonical name.`);
     }
     const p = result.match;
-    await setEnabled(p.name, true);
-    await syncParleyOnEnable(p);
-    const aliases = p.aliases.length > 0 ? ` (${p.aliases.join(", ")})` : "";
-    return `Enabled: ${p.name}${aliases}`;
+    await upsertPersona(p);
+    const aliases = p.aliases.length > 0 ? ` (aliases: ${p.aliases.join(", ")})` : "";
+    return `Enabled: ${p.name}${aliases}. Reachable from any project via parley_ask.`;
   }
 };
 var personasDisable = {
   name: "disable",
-  description: "Disable a persona by canonical name or alias. Open threads are preserved.",
+  description: "Disable a persona by canonical name or alias. Removes its entries from the parley extensions manifest. Open threads on disk are preserved.",
   inputSchema: {
     type: "object",
     properties: { name: { type: "string" } },
@@ -14549,428 +14482,17 @@ var personasDisable = {
     if ("ambiguous" in result) {
       throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
     }
-    await setEnabled(result.match.name, false);
-    await syncParleyOnDisable(result.match.name);
+    await removePersona(result.match.name, result.match.path);
     return `Disabled: ${result.match.name}`;
   }
 };
 
-// src/tools/begin_turn.ts
-import { mkdir as mkdir4 } from "node:fs/promises";
-
-// src/state/project.ts
-import { createHash } from "node:crypto";
+// src/tools/add.ts
+import { mkdir as mkdir2, readFile as readFile4, rm, symlink, stat } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { basename, isAbsolute, join as join4 } from "node:path";
 var exec = promisify(execFile);
-async function projectId(cwd = process.cwd()) {
-  const remote = await gitRemote(cwd);
-  const source = remote ?? cwd;
-  return createHash("sha1").update(source).digest("hex").slice(0, 12);
-}
-async function gitRemote(cwd) {
-  try {
-    const { stdout } = await exec("git", ["config", "--get", "remote.origin.url"], { cwd });
-    const url = stdout.trim();
-    return url.length > 0 ? url : null;
-  } catch {
-    return null;
-  }
-}
-
-// src/state/threads.ts
-import { mkdir as mkdir3, readFile as readFile5, writeFile as writeFile3, appendFile, unlink as unlink2, readdir as readdir2 } from "node:fs/promises";
-import { randomBytes } from "node:crypto";
-async function readOpenThread(projectId2, persona) {
-  try {
-    const text = await readFile5(paths.openThreadFile(projectId2, persona), "utf8");
-    return JSON.parse(text);
-  } catch (err) {
-    if (isEnoent3(err))
-      return null;
-    throw err;
-  }
-}
-async function writeOpenThread(projectId2, persona, thread) {
-  await mkdir3(paths.threadsDir(projectId2, persona), { recursive: true });
-  await writeFile3(paths.openThreadFile(projectId2, persona), JSON.stringify(thread, null, 2) + `
-`, "utf8");
-}
-async function clearOpenThread(projectId2, persona) {
-  try {
-    await unlink2(paths.openThreadFile(projectId2, persona));
-  } catch (err) {
-    if (!isEnoent3(err))
-      throw err;
-  }
-}
-async function writeLastClosed(projectId2, persona, threadId) {
-  await mkdir3(paths.personaStateDir(projectId2, persona), { recursive: true });
-  await writeFile3(paths.lastClosedFile(projectId2, persona), JSON.stringify({ thread_id: threadId }, null, 2) + `
-`, "utf8");
-}
-async function readLastClosed(projectId2, persona) {
-  try {
-    const text = await readFile5(paths.lastClosedFile(projectId2, persona), "utf8");
-    return JSON.parse(text);
-  } catch (err) {
-    if (isEnoent3(err))
-      return null;
-    throw err;
-  }
-}
-function generateThreadId() {
-  const now = new Date;
-  const stamp = now.getFullYear().toString() + pad2(now.getMonth() + 1) + pad2(now.getDate()) + "-" + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
-  const rand = randomBytes(2).toString("hex");
-  return `${stamp}-${rand}`;
-}
-async function ensureTranscript(projectId2, persona, threadId) {
-  await mkdir3(paths.threadsDir(projectId2, persona), { recursive: true });
-  try {
-    await readFile5(paths.threadFile(projectId2, persona, threadId), "utf8");
-  } catch (err) {
-    if (isEnoent3(err)) {
-      await writeFile3(paths.threadFile(projectId2, persona, threadId), "", "utf8");
-    } else {
-      throw err;
-    }
-  }
-}
-async function appendTurn(projectId2, persona, threadId, question, reply) {
-  const ts = new Date().toISOString();
-  const block = `## ${ts} — User
-${question}
-
-## ${ts} — ${persona}
-${reply}
-
-`;
-  await mkdir3(paths.threadsDir(projectId2, persona), { recursive: true });
-  await appendFile(paths.threadFile(projectId2, persona, threadId), block, "utf8");
-}
-async function listOpenThreadsInProject(projectId2) {
-  const out = [];
-  let dirs;
-  try {
-    const entries = await readdir2(paths.projectStateDir(projectId2), { withFileTypes: true });
-    dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
-  } catch (err) {
-    if (isEnoent3(err))
-      return out;
-    throw err;
-  }
-  for (const persona of dirs) {
-    const open = await readOpenThread(projectId2, persona);
-    if (open) {
-      out.push({
-        persona,
-        thread: open,
-        transcript_path: paths.threadFile(projectId2, persona, open.thread_id)
-      });
-    }
-  }
-  return out;
-}
-function pad2(n) {
-  return n.toString().padStart(2, "0");
-}
-function isEnoent3(err) {
-  return typeof err === "object" && err !== null && err.code === "ENOENT";
-}
-
-// src/tools/begin_turn.ts
-var personasBeginTurn = {
-  name: "begin_turn",
-  description: "Begin a turn for a persona. Resolves the persona, computes project_id, ensures state dirs exist, and either reuses the open thread or starts a new one. Returns paths for the dispatcher to use.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      name: { type: "string", description: "Persona name or alias" },
-      question: { type: "string", description: "The user question (used as subject if a new thread)" }
-    },
-    required: ["name", "question"],
-    additionalProperties: false
-  },
-  handler: async (args) => {
-    const ref = requireString(args, "name");
-    const question = requireString(args, "question");
-    const result = await resolvePersona(ref);
-    if (!result)
-      throw new Error(`No persona found matching "${ref}"`);
-    if ("ambiguous" in result) {
-      throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
-    }
-    const p = result.match;
-    const config2 = await readConfig();
-    if (!config2.enabled.includes(p.name)) {
-      throw new Error(`Persona "${p.name}" is not enabled. Run personas_enable first or call /personas enable ${p.name}.`);
-    }
-    const pid = await projectId();
-    await mkdir4(paths.threadsDir(pid, p.name), { recursive: true });
-    let open = await readOpenThread(pid, p.name);
-    let isContinuation = open !== null;
-    if (!open) {
-      const threadId = generateThreadId();
-      open = {
-        thread_id: threadId,
-        started_at: new Date().toISOString(),
-        subject: question.slice(0, 80)
-      };
-      await ensureTranscript(pid, p.name, threadId);
-      await writeOpenThread(pid, p.name, open);
-    }
-    return JSON.stringify({
-      persona_name: p.name,
-      persona_path: p.path,
-      persona_entry_file: p.entryFile,
-      project_id: pid,
-      memory_path: paths.memoryFile(pid, p.name),
-      thread_path: paths.threadFile(pid, p.name, open.thread_id),
-      thread_id: open.thread_id,
-      is_continuation: isContinuation,
-      subject: open.subject,
-      started_at: open.started_at
-    });
-  }
-};
-
-// src/tools/get_thread_context.ts
-var personasGetThreadContext = {
-  name: "get_thread_context",
-  description: "Return paths for a persona's currently open thread (persona_path, memory_path, thread_path) without creating one. Errors if no thread is open. Use before invoking the dispatcher for close-thread or for inspection.",
-  inputSchema: {
-    type: "object",
-    properties: { name: { type: "string" } },
-    required: ["name"],
-    additionalProperties: false
-  },
-  handler: async (args) => {
-    const ref = requireString(args, "name");
-    const result = await resolvePersona(ref);
-    if (!result)
-      throw new Error(`No persona found matching "${ref}"`);
-    if ("ambiguous" in result) {
-      throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
-    }
-    const p = result.match;
-    const pid = await projectId();
-    const open = await readOpenThread(pid, p.name);
-    if (!open)
-      throw new Error(`${p.name} has no open thread in this project.`);
-    return JSON.stringify({
-      persona_name: p.name,
-      persona_path: p.path,
-      persona_entry_file: p.entryFile,
-      project_id: pid,
-      memory_path: paths.memoryFile(pid, p.name),
-      thread_path: paths.threadFile(pid, p.name, open.thread_id),
-      thread_id: open.thread_id,
-      subject: open.subject,
-      started_at: open.started_at
-    });
-  }
-};
-
-// src/tools/commit_turn.ts
-var personasCommitTurn = {
-  name: "commit_turn",
-  description: "Append a Q/A pair to the persona's open thread transcript. Call this after the dispatcher returns its reply.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      name: { type: "string", description: "Persona name or alias" },
-      question: { type: "string" },
-      reply: { type: "string" }
-    },
-    required: ["name", "question", "reply"],
-    additionalProperties: false
-  },
-  handler: async (args) => {
-    const ref = requireString(args, "name");
-    const question = requireString(args, "question");
-    const reply = requireString(args, "reply");
-    const result = await resolvePersona(ref);
-    if (!result)
-      throw new Error(`No persona found matching "${ref}"`);
-    if ("ambiguous" in result) {
-      throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
-    }
-    const p = result.match;
-    const pid = await projectId();
-    const open = await readOpenThread(pid, p.name);
-    if (!open)
-      throw new Error(`No open thread for ${p.name} in this project. Call personas_begin_turn first.`);
-    await appendTurn(pid, p.name, open.thread_id, question, reply);
-    return "";
-  }
-};
-
-// src/state/memory.ts
-import { mkdir as mkdir5, readFile as readFile6, writeFile as writeFile4 } from "node:fs/promises";
-async function appendMemoryBullets(projectId2, persona, takeawaysText) {
-  const file = paths.memoryFile(projectId2, persona);
-  const existing = await readMemory(file);
-  const existingKeys = new Set(existing.map(memoryKey));
-  const incoming = parseBullets(takeawaysText);
-  let added = 0;
-  let deduped = 0;
-  const toAppend = [];
-  for (const line of incoming) {
-    const key = memoryKey(line);
-    if (existingKeys.has(key)) {
-      deduped++;
-      continue;
-    }
-    existingKeys.add(key);
-    toAppend.push(line);
-    added++;
-  }
-  if (toAppend.length > 0) {
-    await mkdir5(paths.personaStateDir(projectId2, persona), { recursive: true });
-    const prefix = existing.length === 0 ? "" : "";
-    await writeFile4(file, [...existing, ...toAppend].join(`
-`) + `
-`, "utf8");
-  }
-  return { added, deduped };
-}
-async function readMemory(file) {
-  try {
-    const text = await readFile6(file, "utf8");
-    return text.split(`
-`).filter((l) => l.trim().length > 0);
-  } catch (err) {
-    if (isEnoent4(err))
-      return [];
-    throw err;
-  }
-}
-function parseBullets(text) {
-  return text.split(`
-`).map((l) => l.trimEnd()).filter((l) => /^- /.test(l));
-}
-function memoryKey(line) {
-  return line.replace(/^- /, "").toLowerCase().slice(0, 60);
-}
-function isEnoent4(err) {
-  return typeof err === "object" && err !== null && err.code === "ENOENT";
-}
-
-// src/tools/close_thread.ts
-var personasCloseThread = {
-  name: "close_thread",
-  description: "Close a persona thread. Appends the dispatcher's takeaway bullets to memory.md (deduped), archives the open thread pointer.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      name: { type: "string", description: "Persona name or alias" },
-      takeaways: {
-        type: "string",
-        description: 'Bullet output from the dispatcher (lines starting with "- ").'
-      }
-    },
-    required: ["name", "takeaways"],
-    additionalProperties: false
-  },
-  handler: async (args) => {
-    const ref = requireString(args, "name");
-    const takeaways = requireString(args, "takeaways");
-    const result = await resolvePersona(ref);
-    if (!result)
-      throw new Error(`No persona found matching "${ref}"`);
-    if ("ambiguous" in result) {
-      throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
-    }
-    const p = result.match;
-    const pid = await projectId();
-    const open = await readOpenThread(pid, p.name);
-    if (!open)
-      throw new Error(`${p.name} has no open thread in this project.`);
-    const memResult = await appendMemoryBullets(pid, p.name, takeaways);
-    await writeLastClosed(pid, p.name, open.thread_id);
-    await clearOpenThread(pid, p.name);
-    return `Closed ${p.name}. ${memResult.added} takeaways added (${memResult.deduped} deduped).`;
-  }
-};
-
-// src/tools/reopen_thread.ts
-import { readFile as readFile7 } from "node:fs/promises";
-var personasReopenThread = {
-  name: "reopen_thread",
-  description: "Restore the persona's most recently closed thread as the open thread. Errors if no last-closed exists or if a thread is already open.",
-  inputSchema: {
-    type: "object",
-    properties: { name: { type: "string" } },
-    required: ["name"],
-    additionalProperties: false
-  },
-  handler: async (args) => {
-    const ref = requireString(args, "name");
-    const result = await resolvePersona(ref);
-    if (!result)
-      throw new Error(`No persona found matching "${ref}"`);
-    if ("ambiguous" in result) {
-      throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(", ")}`);
-    }
-    const p = result.match;
-    const pid = await projectId();
-    if (await readOpenThread(pid, p.name)) {
-      throw new Error(`${p.name} already has an open thread. Close it first.`);
-    }
-    const last = await readLastClosed(pid, p.name);
-    if (!last)
-      throw new Error(`No closed thread to reopen for ${p.name}.`);
-    const transcript = paths.threadFile(pid, p.name, last.thread_id);
-    const text = await readFile7(transcript, "utf8");
-    const firstUser = text.split(`
-`).find((l) => /^## .* — User$/.test(l));
-    const startedAt = firstUser ? firstUser.replace(/^## /, "").replace(/ — User$/, "") : new Date().toISOString();
-    const subjectMatch = /## .* — User\n([^\n]+)/.exec(text);
-    const subject = subjectMatch ? subjectMatch[1].slice(0, 80) : "(restored)";
-    await writeOpenThread(pid, p.name, {
-      thread_id: last.thread_id,
-      started_at: startedAt,
-      subject
-    });
-    return `Reopened ${p.name} thread (${subject}).`;
-  }
-};
-
-// src/tools/threads.ts
-var personasThreads = {
-  name: "threads",
-  description: "List all open persona threads in the current project.",
-  inputSchema: {
-    type: "object",
-    properties: {},
-    additionalProperties: false
-  },
-  handler: async () => {
-    const pid = await projectId();
-    const list = await listOpenThreadsInProject(pid);
-    if (list.length === 0) {
-      return JSON.stringify({ project_id: pid, threads: [] });
-    }
-    return JSON.stringify({
-      project_id: pid,
-      threads: list.map((t) => ({
-        persona: t.persona,
-        thread_id: t.thread.thread_id,
-        started_at: t.thread.started_at,
-        subject: t.thread.subject,
-        transcript_path: t.transcript_path
-      }))
-    }, null, 2);
-  }
-};
-
-// src/tools/add.ts
-import { mkdir as mkdir6, readFile as readFile8, rm, symlink, stat } from "node:fs/promises";
-import { execFile as execFile2 } from "node:child_process";
-import { promisify as promisify2 } from "node:util";
-import { basename, isAbsolute, join as join5 } from "node:path";
-var exec2 = promisify2(execFile2);
 var personasAdd = {
   name: "add",
   description: "Install an external persona from a git URL or absolute local path. Validates persona.md exists with valid frontmatter. Refuses overwrite of existing canonical names.",
@@ -14987,7 +14509,7 @@ var personasAdd = {
   },
   handler: async (args) => {
     const source = requireString(args, "source");
-    await mkdir6(paths.externalDir, { recursive: true });
+    await mkdir2(paths.externalDir, { recursive: true });
     const isUrl = /^(https?:|git@|ssh:)/.test(source);
     const isFileUrl = source.startsWith("file://");
     const localPath = isFileUrl ? source.slice("file://".length) : source;
@@ -14995,19 +14517,19 @@ var personasAdd = {
       throw new Error("source must be a git URL or absolute path (or file:// URL)");
     }
     const inferredName = inferName(source);
-    const targetDir = join5(paths.externalDir, inferredName);
+    const targetDir = join4(paths.externalDir, inferredName);
     if (await exists(targetDir)) {
       throw new Error(`A persona named "${inferredName}" already exists in external/. Remove it first.`);
     }
     if (isUrl) {
-      await exec2("git", ["clone", "--depth", "1", source, targetDir]);
+      await exec("git", ["clone", "--depth", "1", source, targetDir]);
     } else {
       await symlink(localPath, targetDir);
     }
-    const personaFile = join5(targetDir, "persona.md");
+    const personaFile = join4(targetDir, "persona.md");
     let text;
     try {
-      text = await readFile8(personaFile, "utf8");
+      text = await readFile4(personaFile, "utf8");
     } catch {
       await rm(targetDir, { recursive: true, force: true });
       throw new Error(`No persona.md found at ${personaFile}`);
@@ -15049,7 +14571,7 @@ async function exists(path) {
 import { rm as rm2 } from "node:fs/promises";
 var personasRemove = {
   name: "remove",
-  description: "Uninstall an external persona (cloned via `personas add <git-url>`). Refuses plugin-installed personas, which are managed by Claude Code's plugin system. Per-project state is preserved.",
+  description: "Uninstall an external persona (cloned via `personas add <git-url>`). Disables it first (removes from parley extensions manifest), then deletes its directory. Refuses plugin-installed personas, which are managed by Claude Code's plugin system. Per-project state under ~/.claude/personas/state/ is preserved.",
   inputSchema: {
     type: "object",
     properties: { name: { type: "string" } },
@@ -15062,26 +14584,30 @@ var personasRemove = {
     if (!meta2)
       throw new Error(`No persona named "${name}"`);
     if (meta2.source === "plugin") {
-      throw new Error(`"${name}" is a Claude Code plugin. Uninstall via \`/plugin uninstall ${name}-says@<marketplace>\` instead.`);
+      const pluginKey = await findPluginKey(meta2.pluginRoot ?? meta2.path);
+      const hint = pluginKey ? `Uninstall via \`/plugin uninstall ${pluginKey}\` instead.` : `Uninstall it via Claude Code's \`/plugin\` system instead.`;
+      throw new Error(`"${name}" is a Claude Code plugin. ${hint}`);
     }
-    await setEnabled(meta2.name, false);
+    await removePersona(meta2.name, meta2.path);
     await rm2(paths.externalPersonaDir(meta2.name), { recursive: true, force: true });
     return `Removed external persona: ${meta2.name}. State under ~/.claude/personas/state/ preserved.`;
   }
 };
+async function findPluginKey(installPath) {
+  const { plugins } = await loadInstalledPlugins();
+  for (const [key, entries] of Object.entries(plugins)) {
+    if (entries.some((e) => e.installPath === installPath))
+      return key;
+  }
+  return null;
+}
 
 // src/tools/index.ts
 var tools = [
   personasList,
   personasResolve,
-  personasThreads,
   personasEnable,
   personasDisable,
-  personasBeginTurn,
-  personasGetThreadContext,
-  personasCommitTurn,
-  personasCloseThread,
-  personasReopenThread,
   personasAdd,
   personasRemove
 ];
@@ -15093,7 +14619,7 @@ function errorMessage(err) {
   return String(err);
 }
 async function main() {
-  const server = new Server({ name: "personas", version: "0.1.0" }, { capabilities: { tools: {} } });
+  const server = new Server({ name: "personas", version: "0.3.0" }, { capabilities: { tools: {} } });
   const byName = new Map(tools.map((t) => [t.name, t]));
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: tools.map((t) => ({

@@ -13,7 +13,7 @@ function errorMessage(err: unknown): string {
 
 async function main() {
   const server = new Server(
-    { name: 'personas', version: '0.1.0' },
+    { name: 'personas', version: '0.3.0' },
     { capabilities: { tools: {} } },
   );
 

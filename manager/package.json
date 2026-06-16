@@ -1,7 +1,7 @@
 {
   "name": "personas",
-  "version": "0.2.0",
-  "description": "Session-aware persona advisors with project-scoped threads and memory. Bundled pack of public-figure personas; pluggable for third-party personas via git repos.",
+  "version": "0.3.0",
+  "description": "Manager for persona advisors. Each persona is installed as its own marketplace plugin; this manager handles enable/disable and routes ask traffic through parley.",
   "license": "MIT",
   "author": {
     "name": "Mischa Sigtermans"
@@ -9,7 +9,8 @@
   "repository": "https://github.com/mischasigtermans/claude-personas",
   "type": "module",
   "scripts": {
-    "build": "bun build src/server.ts --target=node --format=esm --outfile=dist/server.js"
+    "build": "bun build src/server.ts --target=node --format=esm --outfile=dist/server.js",
+    "test": "bun test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"

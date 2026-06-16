@@ -5,6 +5,15 @@ function personasDataDir(): string {
   return process.env.PERSONAS_DIR ?? join(homedir(), '.claude', 'personas');
 }
 
+/**
+ * Parley's state root. Mirrors parley's own path-resolution logic so both
+ * plugins agree on where state lives. Don't import parley source; replicate
+ * the one-liner here. The extensions manifest contract is purely FS-level.
+ */
+function parleyDir(): string {
+  return process.env.PARLEY_DIR ?? join(homedir(), '.claude', 'parley');
+}
+
 function pluginRoot(): string {
   const root = process.env.PERSONAS_PLUGIN_ROOT;
   if (!root) {
@@ -20,27 +29,19 @@ export const paths = {
   get pluginRoot() {
     return pluginRoot();
   },
-  get configFile() {
-    return join(personasDataDir(), 'config.json');
-  },
   get externalDir() {
     return join(personasDataDir(), 'external');
   },
-  get stateDir() {
-    return join(personasDataDir(), 'state');
-  },
   externalPersonaDir: (name: string) => join(personasDataDir(), 'external', name),
-  projectStateDir: (projectId: string) => join(personasDataDir(), 'state', projectId),
-  personaStateDir: (projectId: string, persona: string) =>
-    join(personasDataDir(), 'state', projectId, persona),
-  threadsDir: (projectId: string, persona: string) =>
-    join(personasDataDir(), 'state', projectId, persona, 'threads'),
-  threadFile: (projectId: string, persona: string, threadId: string) =>
-    join(personasDataDir(), 'state', projectId, persona, 'threads', `${threadId}.md`),
-  memoryFile: (projectId: string, persona: string) =>
-    join(personasDataDir(), 'state', projectId, persona, 'memory.md'),
-  openThreadFile: (projectId: string, persona: string) =>
-    join(personasDataDir(), 'state', projectId, persona, 'open-thread.json'),
-  lastClosedFile: (projectId: string, persona: string) =>
-    join(personasDataDir(), 'state', projectId, persona, 'last-closed.json'),
+  /**
+   * Parley extensions manifest owned by personas. Personas writes the list of
+   * enabled personas here; parley scans `<parleyDir>/extensions/*.json` and
+   * merges these entries into its peer registry. FS-level contract only.
+   */
+  get parleyExtensionManifest() {
+    return join(parleyDir(), 'extensions', 'personas.json');
+  },
+  get parleyExtensionsDir() {
+    return join(parleyDir(), 'extensions');
+  },
 } as const;

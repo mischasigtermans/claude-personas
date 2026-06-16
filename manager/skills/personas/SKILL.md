@@ -1,24 +1,27 @@
 ---
 name: personas
-description: Consult and manage persona advisors (Steve Jobs, Taylor Otwell, Raymond Hettinger, David Tolnay, or installed third-party personas). Activates when the user asks for a named persona's perspective ("ask steve", "what would taylor say"), or invokes `/personas` to list, enable, ask, close threads, or manage the registry. Routes through the `personas` MCP server, which owns all state.
+description: Consult and manage persona advisors installed as separate marketplace plugins (Steve Jobs, Taylor Otwell, Raymond Hettinger, David Tolnay, third-party personas, or external clones). Activates when the user asks for a named persona's perspective ("ask steve", "what would taylor say"), or invokes `/personas` to list, enable, disable, ask, or manage the registry. Routes through the `personas` MCP server for enable/disable state and through `parley_ask` for the actual conversation.
 ---
 
 # Personas
 
-Session-aware persona advisors with project-scoped threads and durable memory. Each persona is a long-lived voice you can consult; threads persist across CC sessions, and closed threads distill into a per-project memory file the persona reloads next time.
+Persona advisors you can consult from any project. Each persona is a peer with its own voice and knowledge module. The personas plugin manages enable/disable state via the parley extensions manifest. Asking a persona goes through `parley_ask`. Parley handles spawning, session continuity (via `--resume`), and the transcript log.
 
-State lives in `~/.claude/personas/`, owned by the `personas` MCP server. **Use the MCP tools (`mcp__personas__*`) for every state operation. Never `Bash` mkdir, sha1, or write JSON state.** If a tool seems missing, flag it. Don't fall back to bash.
+State split:
+
+- **Personas plugin** owns: which personas exist (installed plugins + external clones), which are enabled (manifest at `~/.claude/parley/extensions/personas.json`).
+- **Parley** owns: how to reach an enabled persona, session continuity across turns, transcripts. Enabled personas appear in `parley_peers` as ordinary peers.
+
+**Use the MCP tools for every state operation. Never `Bash` mkdir, sha1, or write JSON state.** If a tool seems missing, flag it. Don't fall back to bash.
 
 ## How this skill activates
 
-Two paths. Decide which one applies before reading further.
+Two paths.
 
-1. **Awareness path.** The user named a persona in natural language ("ask steve about X", "what would taylor say"). Take the *resolve → ask* sequence below. Most common case.
-2. **Explicit path.** The user typed `/personas`, `/personas <action>`, or asked operationally ("list personas", "enable steve-jobs", "show open threads"). Jump to *Actions*.
+1. **Awareness path.** The user named a persona in natural language ("ask steve about X", "what would taylor say"). Take the *resolve → ask* sequence below.
+2. **Explicit path.** The user typed `/personas`, `/personas <action>`, or asked operationally ("list personas", "enable steve-jobs"). Jump to *Actions*.
 
 If the user typed `/personas` with no argument, run the *discovery menu* under Actions.
-
-Before either path, run *Silent auto-close* against open threads if applicable (see bottom).
 
 ---
 
@@ -57,30 +60,55 @@ Then run the *ask sequence*.
 
 ---
 
+## Ask sequence
+
+Once you have a resolved, enabled persona name and a user question:
+
+1. **Craft the question.** The persona is a separate session and only sees this prompt. Treat it as self-contained:
+   - State the goal in one sentence.
+   - Include any relevant snippet, error, or context the persona needs to answer.
+   - Be specific about what you want back ("push back on this plan", not "thoughts?").
+
+2. **Call `parley_ask`** with `peer` = the persona's canonical name (or any alias) and `question` = the crafted prompt. Parley resolves the alias via the personas extension manifest, spawns claude in the persona's plugin directory (so `CLAUDE.md` loads with the persona's voice), and routes through whichever transport applies (live if you've summoned a Terminal, headless otherwise). Continuity across turns is automatic via parley's session pointer.
+
+3. **Display.** Return the reply prefixed with the persona's display name in italics: *Steve Jobs:* …
+
+4. **Act on the answer.** Don't just relay and stop. Use the reply to advance the user's task. If steve says "this feature is wrong, kill it", discuss with the user whether to act on that. If raymond proposes a refactor, show the actual code. The persona is an advisor, not an oracle.
+
+### Follow-ups
+
+Subsequent `parley_ask` calls to the same persona resume the cached session; the persona remembers the prior turn. No explicit thread management is needed.
+
+To start fresh (the persona forgets prior context): `/parley reset <persona-name>` clears the cached session for this project. The next ask spawns a new claude session.
+
+---
+
 ## Actions
 
 Parse the argument the user supplied with `/personas` (or the operational request) and dispatch.
 
 ### `(no argument)`: discovery menu
 
-1. Call `list` to get all known personas.
+1. Call `list` to get all known personas with their enabled state.
 2. Print a table: name, status (enabled/disabled), aliases, description.
-3. If none are enabled, append the first-run hint:
-   ```
-   No personas enabled yet. To get started:
+3. **Branch on what `list` returned:**
+   - **No personas at all** (empty list): the manager is installed but no persona plugins are. Tell the user to install one or more via the marketplace, e.g. `/plugin install steve-jobs@by-mischa`, `/plugin install taylor-otwell@by-mischa`. Each persona is a separate plugin; the manager just manages enable/disable + routing.
+   - **Personas installed but none enabled**: print the first-run hint:
+     ```
+     Personas installed but none enabled. To activate one:
 
-     /personas enable steve-jobs        bundled persona
-     /personas enable taylor-otwell     (laravel reviews)
-     /personas list                     show all known personas
+       /personas enable <name>            e.g. /personas enable steve-jobs
+       /personas list                     show all known personas
 
-   Then just speak: "what would steve think about this?"
-   ```
+     Then just speak: "what would steve think about this?"
+     ```
+   - **At least one enabled**: skip ahead to the "Common moves" hint.
 4. Otherwise append:
    ```
    Common moves:
-     /personas ask <name> <question>     explicit ask
-     /personas threads                   show open threads in this project
-     /personas close <name>              close a thread, persona writes takeaways
+     /personas ask <name> <question>     explicit ask (routes through parley_ask)
+     /personas enable <name>             activate a persona
+     /personas disable <name>            deactivate (preserves any cached state)
      /personas add <git-url-or-path>     install an external persona
    Or just speak: "ask steve about X", "what would taylor say".
    ```
@@ -93,118 +121,27 @@ Same as no-argument, always print full table (no first-run hint).
 
 Call `enable` / `disable` with `name`. Print the result message.
 
+The plugin writes/removes the persona's entry in `~/.claude/parley/extensions/personas.json`. From that moment on, parley sees the persona as a peer addressable by canonical name or any alias.
+
 ### `add <git-url-or-path>`
 
 Call `add` with `source` set to the argument. Print result. After success, suggest `/personas enable <name>`.
 
 ### `remove <name>`
 
-Call `remove` with `name`. Print result.
+Call `remove` with `name`. Print result. Refuses plugin-installed personas (those come/go via Claude Code's plugin system).
 
 ### `ask <name> <question…>`
 
-Run the *ask sequence* below with the supplied name and question. Bypasses awareness detection but uses the same machinery.
+Run the *ask sequence* above with the supplied name and question. Bypasses awareness detection but uses the same machinery.
 
-### `threads`
+### `resolve <name-or-alias>`
 
-Call `threads`. If empty, print `No open threads in this project.` Otherwise list each: persona, started_at, subject, transcript path.
-
-### `close <name>`
-
-Run the *close sequence* below.
-
-### `new <name>`
-
-Park the current open thread by running the *close sequence* on it, then tell the user: `Started fresh thread for <name>. Just ask your question.` The next ask creates the new thread automatically.
-
-### `reopen <name>`
-
-Call `reopen_thread` with `name`. Print result.
+Call `resolve`. Useful for verifying which canonical persona an alias maps to and whether it's enabled.
 
 ### Unknown action
 
 Print the "Common moves" hint from the discovery menu.
-
----
-
-## Ask sequence (shared by awareness and `/personas ask`)
-
-Once you have a resolved, enabled persona name and a user question:
-
-1. **Begin the turn.** Call `begin_turn` with `name` (canonical name) and `question` (the user's actual question, full text). You get back: `persona_name`, `persona_path`, `memory_path`, `thread_path`, `is_continuation`, `subject`.
-
-2. **In-session continuation check.** If you have already spawned a dispatcher named `<persona_name>` in this CC session, the agent is alive and addressable. Use `SendMessage({to: "<persona_name>", message: <built prompt>})`. The dispatcher's own context holds prior turns; transcript replay is unnecessary.
-
-3. **Otherwise spawn the dispatcher** via `Agent({subagent_type: "personas:persona", name: "<persona_name>", prompt: <built prompt>})`. Record the returned `agentId` in your own working memory for this CC session. Name-based addressability is unreliable across user turns; use `agentId` for any subsequent `SendMessage` calls.
-
-   When the dispatcher runs in the background after `SendMessage`, the harness automatically delivers a `<task-notification>` with `<result>...</result>` when it completes. **Wait for that notification.** Do NOT poll JSONL files in `/tmp/...` or run bash to check progress.
-
-   Built prompt:
-   ```
-   PERSONA: <persona_name>
-   PERSONA_PATH: <persona_path>
-   PERSONA_ENTRY_FILE: <persona_entry_file>
-   MEMORY_PATH: <memory_path>
-   THREAD_PATH: <thread_path>      # or "(new thread)" if is_continuation is false
-
-   QUESTION:
-   <user's question>
-   ```
-
-   Pass paths only. Do NOT inline the persona's system prompt or context files. The dispatcher reads them itself.
-
-4. **Display.** Return the reply prefixed with the persona's display name in italics: *Steve Jobs:* …
-
-   The dispatcher writes the Q/A block to the transcript file before returning. Do not call `commit_turn`. (It's an escape hatch for importing turns from outside, not the normal flow.)
-
-### Crafting the question
-
-Pass a useful `question` field. Full sentence, the goal not just keywords ("We're deciding whether to launch X. What would you push back on?", not "thoughts on launch?").
-
-If the persona's first reply is incomplete, follow up with another `begin_turn` + spawn/send cycle. The thread persists.
-
-### Acting on the answer
-
-Don't just relay and stop. Use the reply to advance the user's task. If steve says "this feature is wrong, kill it", discuss with the user whether to act on that. If raymond proposes a refactor, show the actual code. The persona is an advisor, not an oracle.
-
----
-
-## Close sequence (shared by `/personas close`, `new`, and silent auto-close)
-
-1. Call `get_thread_context` with the persona's `name` to get `persona_path`, `persona_entry_file`, `memory_path`, `thread_path` (errors if no open thread).
-2. Spawn (or `SendMessage`, if the dispatcher is alive in-session) with the close-task prompt:
-   ```
-   PERSONA: <persona_name>
-   PERSONA_PATH: <persona_path>
-   PERSONA_ENTRY_FILE: <persona_entry_file>
-   MEMORY_PATH: <memory_path>
-   THREAD_PATH: <thread_path>
-
-   TASK: close-thread
-
-   This thread is closing. Output 3–8 bullet takeaways for the persona's memory file. Format `- <bullet>`. Output ONLY bullets, no preamble.
-   ```
-3. Call `close_thread` with `name` and `takeaways` set to the dispatcher's bullet output. The server writes to `memory.md` (deduped) and archives the thread.
-4. Print the result. (For silent auto-close, use the one-line notification format below instead.)
-
----
-
-## Silent auto-close
-
-Before spawning a persona for a new turn, **and** at the start of every user turn that does not trigger a persona, evaluate every open thread for the current project against close heuristics:
-
-- **Idle**: 3+ consecutive user turns without involving this persona (no triggers, no `/personas ask`, no follow-up to the persona's last reply).
-- **Topic shift / closure cue**: user signaled closure ("thanks", "got it", "ok cool", "anyway", "let's move on") OR the current topic is unrelated to the thread's `subject`. LLM judgment.
-- **Resolution**: persona's last reply provided a clear, complete answer and the user accepted it without follow-up.
-
-Use `threads` to enumerate open threads.
-
-When a heuristic fires:
-
-1. Run the *close sequence* above.
-2. Notify the user with one line: *Closed `<persona>` thread (<reason>). `/personas reopen <name>` to restore.*
-
-**Do NOT silent-close on the same turn the persona was just active.** Resolution heuristics fire on the *next* turn, not the current one.
 
 ---
 
@@ -213,7 +150,6 @@ When a heuristic fires:
 - Don't trigger awareness on referential mentions. Ask-vs-mention is the bright line.
 - Don't bypass the disabled state. Don't auto-enable to fulfill a trigger.
 - Don't `Bash` your way to mkdir, sha1, or JSON writes. Every state operation goes through an MCP tool.
-- Don't inline the persona's system prompt or context files in the spawn prompt. Pass paths only.
-- Don't fabricate aliases or invent personas not in the enabled set.
-- Don't respawn the persona via `Agent` if it's already addressable via `SendMessage` in this session.
-- Don't silently close on the same turn the persona was active.
+- Don't fabricate aliases or invent personas not in the list.
+- Don't call `parley_add` to register a persona manually. The personas plugin owns the extension manifest; manual peers.json entries are a different code path.
+- Don't expect thread / memory / close machinery. It's not part of this plugin's surface in v0.3.0. Continuity is parley's session pointer, not personas-specific state.

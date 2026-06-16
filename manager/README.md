@@ -6,7 +6,7 @@
 
 Channel personas, expert advisors, from any Claude Code session.
 
-The Personas plugin is the dispatcher and state machine for persona-flagged plugins. It detects installed persona plugins, routes natural-language asks ('ask steve what he thinks'), runs the per-project thread and memory state machine, and registers each enabled persona as a parley peer so cross-project advice works too.
+The Personas plugin is the registry for persona-flagged plugins. It detects installed persona plugins, tracks which ones are enabled, and registers each enabled persona as a parley peer. Asking a persona ('ask steve what he thinks') routes through `parley_ask`. Parley owns the conversation: it spawns the persona's project as a headless Claude session, resumes it across turns, and logs the transcript.
 
 ## Installation
 
@@ -18,7 +18,7 @@ The Personas plugin is the dispatcher and state machine for persona-flagged plug
 ### Requires
 
 - Claude Code
-- [Parley](https://github.com/mischasigtermans/claude-parley) for transport
+- [Parley](https://github.com/mischasigtermans/claude-parley) ≥ 0.3.0 for transport
 - At least one persona plugin to do anything useful, e.g. [steve-jobs](https://github.com/mischasigtermans/claude-personas/tree/main/personas/steve-jobs)
 
 ## Quick start
@@ -31,32 +31,39 @@ Install a persona, enable it, and ask it something in plain language:
 'ask steve what he thinks about removing this feature'
 ```
 
-The Personas skill picks up the natural-language ask, dispatches to Steve, and threads the conversation. Continued asks stay in the same thread. The thread closes silently when you move on, and Steve writes 3-8 takeaways to a per-project memory file so the next conversation starts from where this one ended.
+The Personas skill picks up the natural-language ask and calls `parley_ask peer=steve`. Parley spawns Steve in his own plugin directory, so his `CLAUDE.md` loads as the voice, and returns the reply. The next ask resumes the same Claude session, so Steve remembers the prior turn.
 
 You can also be explicit:
 
 ```
 /personas ask steve-jobs 'Evaluate this product brief...'
-/personas threads               # open threads in this project
-/personas close steve-jobs      # close thread, write takeaways
-/personas reopen steve-jobs     # restore the last closed thread
+/personas list                  # all known personas and their status
+/personas disable steve-jobs    # remove from the parley registry
 ```
+
+To start a persona fresh (forget the prior turns): `/parley reset <name>` clears the cached session for this project.
 
 ## Features
 
 - Auto-discovery of installed persona plugins via the `persona.json` marker at the plugin root.
 - Natural-language dispatch: 'ask steve what he thinks' routes through the right persona without explicit slash commands.
-- Project-scoped threads: the same persona runs different memory and threads per project, keyed off the git remote.
-- Durable memory: when a thread closes, the persona distills 3-8 takeaways into `memory.md` for next time.
-- Silent auto-close on idle, topic shift, or resolution. `/personas reopen` is the safety valve.
-- Parley sync: enabling a persona registers it as a parley peer so it's reachable across project sessions.
+- Per-project continuity: parley keeps one continuous Claude session per (calling project, persona), keyed off the git remote. The same persona has separate context per project.
+- Parley registry: enabling a persona writes it to parley's extensions manifest, so it's reachable from any project session as an ordinary peer.
+- Per-persona runtime: `model`, `mcpServers`, and trusted-peer permissions from `persona.json` carry through to the headless spawn.
+
+## State split
+
+- **Personas plugin** owns: which personas exist (installed plugins + external clones), which are enabled (manifest at `~/.claude/parley/extensions/personas.json`).
+- **Parley** owns: how to reach an enabled persona, session continuity across turns, transcripts.
+
+There is no separate thread or memory state machine in this plugin. Continuity is parley's session pointer.
 
 ## Documentation
 
 - [Commands](docs/commands.md): slash commands and MCP tools reference
-- [State](docs/state.md): how threads, memory, and project_id work
+- [State](docs/state.md): the extensions manifest, project scoping, what parley owns
 - [Authoring](docs/authoring.md): writing your own persona plugin
-- [Architecture](docs/architecture.md): how the dispatcher, manager, and personas fit together
+- [Architecture](docs/architecture.md): how the persona plugins, manager, and parley fit together
 
 ## Related
 

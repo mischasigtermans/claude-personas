@@ -1,11 +1,11 @@
-import { setEnabled } from '../state/config.js';
 import { resolvePersona } from '../state/persona.js';
-import { syncParleyOnDisable, syncParleyOnEnable } from '../state/parley-sync.js';
+import { upsertPersona, removePersona } from '../state/manifest.js';
 import { requireString, type ToolDef } from './types.js';
 
 export const personasEnable: ToolDef = {
   name: 'enable',
-  description: 'Enable a persona by canonical name or alias.',
+  description:
+    'Enable a persona by canonical name or alias. Writes the persona (and all its aliases) into the parley extensions manifest at ~/.claude/parley/extensions/personas.json so parley_ask routes to it without a manual parley_add.',
   inputSchema: {
     type: 'object',
     properties: { name: { type: 'string' } },
@@ -22,16 +22,18 @@ export const personasEnable: ToolDef = {
       );
     }
     const p = result.match;
-    await setEnabled(p.name, true);
-    await syncParleyOnEnable(p);
-    const aliases = p.aliases.length > 0 ? ` (${p.aliases.join(', ')})` : '';
-    return `Enabled: ${p.name}${aliases}`;
+
+    await upsertPersona(p);
+
+    const aliases = p.aliases.length > 0 ? ` (aliases: ${p.aliases.join(', ')})` : '';
+    return `Enabled: ${p.name}${aliases}. Reachable from any project via parley_ask.`;
   },
 };
 
 export const personasDisable: ToolDef = {
   name: 'disable',
-  description: 'Disable a persona by canonical name or alias. Open threads are preserved.',
+  description:
+    'Disable a persona by canonical name or alias. Removes its entries from the parley extensions manifest. Open threads on disk are preserved.',
   inputSchema: {
     type: 'object',
     properties: { name: { type: 'string' } },
@@ -45,8 +47,9 @@ export const personasDisable: ToolDef = {
     if ('ambiguous' in result) {
       throw new Error(`"${ref}" is ambiguous: ${result.candidates.map((c) => c.name).join(', ')}`);
     }
-    await setEnabled(result.match.name, false);
-    await syncParleyOnDisable(result.match.name);
+
+    await removePersona(result.match.name, result.match.path);
+
     return `Disabled: ${result.match.name}`;
   },
 };

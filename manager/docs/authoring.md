@@ -35,29 +35,28 @@ my-persona/
 |---|---|---|
 | `name` | yes | Canonical identifier. Matches the plugin name and the slug used everywhere. |
 | `displayName` | yes | Shown in `/personas list`. |
-| `aliases` | yes | Short forms the dispatcher resolves ('marie' → 'marie-curie'). |
-| `description` | yes | Single sentence shown in the discovery menu. |
-| `model` | yes | Claude model the dispatcher uses for this persona's turns. |
-| `traits` | yes | Tags surfaced in `/personas list` and used by the discovery menu. |
+| `aliases` | yes | Short forms parley resolves to this persona ('marie' → 'marie-curie'). Each alias is written as a separate entry in the extensions manifest pointing at the same path. |
+| `description` | yes | Single sentence shown in the discovery menu and surfaced in `parley_peers`. |
+| `traits` | yes | Tags surfaced in `/personas list`. |
 
-Do **not** include an `mcpServers` block. The Personas manager handles parley peer registration via hooks. Personas plugins must not bundle parley as their own MCP server.
+Do **not** include an `mcpServers` block. The Personas manager registers your persona with parley by writing the extensions manifest at `~/.claude/parley/extensions/personas.json` when the user runs `/personas enable <name>`. Persona plugins must not bundle parley as their own MCP server or write to parley state directly.
 
 ## CLAUDE.md
 
-The persona's system prompt. The dispatcher reads this file as the body for every turn. Write it as if you're addressing the persona itself: voice, principles, output format, scope boundaries.
+The persona's system prompt. When a user asks the persona a question, parley spawns claude in the persona's plugin directory; claude reads `CLAUDE.md` as it would in any other Claude Code project. Write it as if you're addressing the persona itself: voice, principles, output format, scope boundaries.
 
-Don't reference `@context/...` in CLAUDE.md. The dispatcher globs `context/*.md` and reads every file before each turn. Your CLAUDE.md only needs to contain the persona's defining content; the voice files are loaded automatically.
+You can reference `@context/voice.md` etc. inline; Claude Code resolves @-references when loading `CLAUDE.md`. Or you can keep `CLAUDE.md` tight and rely on Claude Code's own conventions to surface adjacent context.
 
 ## context/
 
-Each `.md` file at the top level of `context/` is loaded before every turn. Conventional file names:
+Optional. Convention from earlier persona iterations: hold reference-heavy material in separate files so `CLAUDE.md` stays scannable. Conventional file names if you use this pattern:
 
 - `voice.md`: how the persona speaks. Registers, vocabulary, what's off-limits.
 - `quotes.md`: documented quotes that shape natural language.
 - `personality.md`: conditional personality modes triggered by content.
 - `anti-patterns.md`: what the persona rejects and why.
 
-You can ship fewer or more files; the dispatcher reads everything in `context/*.md`. Nested subdirectories are not picked up.
+Reference them from `CLAUDE.md` via `@context/<name>.md`. Without explicit references, only `CLAUDE.md` itself loads on persona spawn.
 
 ## skills/
 

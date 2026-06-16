@@ -1,6 +1,6 @@
 # Commands
 
-Personas exposes two surfaces: slash commands for explicit operations, and natural-language triggers handled by the `personas` skill ('ask steve what he thinks'). Both route to the same MCP tools.
+Personas exposes two surfaces: slash commands for explicit operations, and natural-language triggers handled by the `personas` skill ('ask steve what he thinks'). Enable/disable and lookup route to the personas MCP server; the actual ask routes to `parley_ask`.
 
 ## Slash commands
 
@@ -8,29 +8,28 @@ Personas exposes two surfaces: slash commands for explicit operations, and natur
 |---|---|
 | `/personas` | Discovery menu. Lists known personas and their status. |
 | `/personas list` | Always-full table of known personas. |
-| `/personas enable <name>` | Activate a persona. Registers it as a parley peer. |
-| `/personas disable <name>` | Deactivate. Open threads are preserved. Removes the parley peer entry. |
+| `/personas enable <name>` | Activate a persona. Writes it into the parley extensions manifest. |
+| `/personas disable <name>` | Deactivate. Removes its entries from the manifest. Any cached parley session is preserved. |
 | `/personas add <git-url-or-path>` | Install an external persona repo (non-plugin format). |
 | `/personas remove <name>` | Uninstall an external persona. Plugin-installed personas are removed via `/plugin uninstall` instead. |
-| `/personas ask <name> <question>` | Explicit ask, bypasses awareness detection. |
-| `/personas threads` | List open threads in this project. |
-| `/personas close <name>` | Close thread, persona writes 3-8 takeaway bullets to memory. |
-| `/personas new <name>` | Park the current thread, start a fresh one. |
-| `/personas reopen <name>` | Restore the last closed thread. |
+| `/personas ask <name> <question>` | Explicit ask, bypasses awareness detection. Routes through `parley_ask`. |
+| `/personas resolve <name-or-alias>` | Map an alias ('steve') to its canonical name and show enabled state. |
+
+Continuity, transcripts, and starting a persona fresh are parley's surface: `/parley log <name>`, `/parley reset <name>`.
 
 ## MCP tools
 
-The Personas MCP server owns all state. The tools cover the same surface as the slash commands plus the dispatcher entry points:
+The Personas MCP server owns the registry. Its tools:
 
-`personas_list`, `personas_enable`, `personas_disable`, `personas_add`, `personas_remove`, `personas_ask`, `personas_threads`, `personas_begin_turn`, `personas_commit_turn`, `personas_close_thread`, `personas_reopen_thread`, `personas_resolve`, `personas_get_thread_context`.
+`personas_list`, `personas_enable`, `personas_disable`, `personas_add`, `personas_remove`, `personas_resolve`.
 
-The `begin_turn` / `commit_turn` pair brackets every dispatched persona turn. `get_thread_context` returns the thread transcript plus memory file plus persona entry path for the dispatcher to load. `resolve` is the lookup that maps an alias ('steve') to a canonical name ('steve-jobs').
+`resolve` maps an alias ('steve') to a canonical name ('steve-jobs') and reports whether it's enabled. `enable` / `disable` mutate the parley extensions manifest. There are no turn or thread tools; the conversation runs entirely through `parley_ask`.
 
 ## How the skill routes
 
 The `personas` skill detects two paths:
 
-1. **Natural-language ask** ('ask steve about X', 'what would taylor say'). Skill resolves the alias, opens or continues a thread, dispatches to the persona, threads the reply.
+1. **Natural-language ask** ('ask steve about X', 'what would taylor say'). Skill calls `resolve` to map the alias and check it's enabled, then calls `parley_ask peer=<name>` with the crafted question.
 2. **Slash command** (`/personas ...`). Skill maps the verb to the corresponding MCP tool and returns the result.
 
-State (threads, memory, the enabled set, parley sync) lives at `~/.claude/personas/` and is owned exclusively by the MCP server. The skill never writes state directly.
+The enabled set lives at `~/.claude/parley/extensions/personas.json` and is owned exclusively by the personas MCP server. The skill never writes state directly.

@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.3.0] - 2026-05-19
+
+Personas migrates onto parley's extensions seam. The plugin no longer imports parley TypeScript source and no longer writes `~/.claude/parley/peers.json`. Enabled personas live in a manifest under `~/.claude/parley/extensions/personas.json`; parley merges them into its peer registry.
+
+**Breaking**
+
+- Removed direct imports from `claude-parley/src/`. Personas now talks to parley through a filesystem-level contract only.
+- `~/.claude/parley/peers.json` is no longer mutated by personas. Stale `type: "persona"` entries from v0.2.0 stay where they are; `parley_remove` them manually.
+
+**Added**
+
+- `manager/src/state/manifest.ts` writes `~/.claude/parley/extensions/personas.json` atomically (write tmp + rename). Each enabled persona becomes one entry per declared alias (canonical name + aliases), all pointing at the persona's plugin path. `parley_ask peer=<any-alias>` resolves.
+- Manifest entries carry the persona's `model`, `mcpServers`, and `skipPermissions: true` from `persona.json`, so the headless spawn matches the persona's intended runtime (e.g. Steve runs on opus). Requires parley ≥ 0.3.0, which now reads these fields off extension peers.
+
+**Changed**
+
+- `enable`/`disable`/`list`/`resolve` now read and mutate the extensions manifest.
+- `parley-sync.ts` removed. The cross-plugin lock is gone; personas owns its manifest file exclusively.
+
+**Removed**
+
+- The in-session thread/memory state machine: `begin_turn`, `commit_turn`, `close_thread`, `reopen_thread`, `get_thread_context`, `threads`, plus `threads.ts`, `memory.ts`, `project.ts`, `config.ts`, the SessionEnd notify hook, and `notify-open-threads.sh`. Continuity is now parley's session pointer; the conversation runs entirely through `parley_ask`.
+- The `persona` dispatcher subagent (`agents/persona.md`) and the dead `PersonaMeta.entryFile` field. The persona's voice loads from its own `CLAUDE.md` when parley spawns it; no manager-controlled prompt builds it anymore.
+
+**Fixed**
+
+- Stale-alias purge on persona path change (e.g. plugin version bump from `cache/by-mischa/steve-jobs/0.1.0` to `0.2.0`). `upsertPersona` now drops entries by path OR alias match, so old-path rows don't linger.
+- Latent path bug: previous code read `~/.parley/peers.json` (legacy path); the new manifest lives at `~/.claude/parley/extensions/personas.json`, matching parley's actual default.
+- Per-persona `model` and `mcpServers` no longer silently dropped. The earlier extension-manifest cut wrote only alias/path/description/type, so personas lost their opus model and MCP servers on the headless path; both now carry through.
+
+**Requires**
+
+- parley v0.3.0 for the extensions manifest contract.
+
+**Known assumptions**
+
+- Single-user. The enable/disable read-modify-write on the manifest is not lock-guarded. Two concurrent enables can lose one write. Acceptable for v0.3.0.
+
 ## [0.2.0] - 2026-05-13
 
 The personas plugin becomes a pure host. The four personas (steve-jobs, taylor-otwell, raymond-hettinger, david-tolnay) ship as their own plugin entries through the by-mischa marketplace, each declaring `persona.json` at their plugin root. Enabling a persona auto-registers it as a parley peer when parley is installed.

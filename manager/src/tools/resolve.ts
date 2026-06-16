@@ -1,11 +1,11 @@
-import { readConfig } from '../state/config.js';
+import { readManifest } from '../state/manifest.js';
 import { resolvePersona } from '../state/persona.js';
 import { requireString, type ToolDef } from './types.js';
 
 export const personasResolve: ToolDef = {
   name: 'resolve',
   description:
-    'Resolve a name or alias to a canonical persona. Returns canonical name, source path, enabled status, aliases, and description. On collision, returns ambiguous: true with candidates.',
+    'Resolve a name or alias to a canonical persona. Returns canonical name, source path, enabled status (whether it is in the parley extensions manifest), aliases, and description. On collision, returns ambiguous: true with candidates.',
   inputSchema: {
     type: 'object',
     properties: { ref: { type: 'string', description: 'Persona name or alias' } },
@@ -14,8 +14,8 @@ export const personasResolve: ToolDef = {
   },
   handler: async (args) => {
     const ref = requireString(args, 'ref');
-    const config = await readConfig();
-    const enabled = new Set(config.enabled);
+    const manifest = await readManifest();
+    const enabledPaths = new Set(manifest.peers.map((p) => p.path));
     const result = await resolvePersona(ref);
     if (!result) {
       return JSON.stringify({ found: false, ref });
@@ -27,7 +27,7 @@ export const personasResolve: ToolDef = {
           name: p.name,
           aliases: p.aliases,
           source: p.source,
-          enabled: enabled.has(p.name),
+          enabled: enabledPaths.has(p.path),
         })),
       });
     }
@@ -36,7 +36,7 @@ export const personasResolve: ToolDef = {
       found: true,
       name: p.name,
       aliases: p.aliases,
-      enabled: enabled.has(p.name),
+      enabled: enabledPaths.has(p.path),
       description: p.description ?? '',
       source: p.source,
       path: p.path,
