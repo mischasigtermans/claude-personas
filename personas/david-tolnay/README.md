@@ -43,12 +43,12 @@ David reviews Rust code for idiomatic patterns, type safety, and unnecessary fig
 ### Requires
 
 - Claude Code
-- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for threads and memory
-- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport
+- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for the persona registry and natural-language dispatch
+- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport and durable memory
 
 ## With the Personas plugin
 
-Per-project memory: David remembers your crate's lifetime conventions, error type choices, and which `unsafe` invariants you've already justified. Threads continue across CC sessions until you move on, then David writes takeaways to `memory.md` so the next review starts from your conventions.
+Per-project memory: David remembers your crate's lifetime conventions, error type choices, and which `unsafe` invariants you've already justified. Parley keeps one continuous session per project, and `/parley remember david` distils the review into durable bullets the next one starts from.
 
 Without the Personas plugin, David still loads his voice and reviews code on demand, but every review is fresh.
 

@@ -1,5 +1,9 @@
 # Claude Personas
 
+[![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/mischasigtermans/claude-personas/main/manager/.claude-plugin/plugin.json&query=$.version&label=version&prefix=v)](https://github.com/mischasigtermans/claude-personas/tree/main/manager)
+[![Personas](https://img.shields.io/badge/personas-4-blue)](https://github.com/mischasigtermans/claude-personas#personas)
+[![License](https://img.shields.io/github/license/mischasigtermans/claude-personas)](LICENSE)
+
 A growing library of field-expert advisor plugins for Claude Code. Each persona is a long-lived voice with documented sources, per-project continuity, and optional tooling that puts the expert to work.
 
 The library contains the Personas manager (the registry) plus a starter set of single-expert advisors. Each plugin is independent and installable through the by-mischa marketplace.

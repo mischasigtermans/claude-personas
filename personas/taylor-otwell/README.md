@@ -39,14 +39,14 @@ Taylor reviews Laravel code for over-engineering, unnecessary abstractions, and 
 ### Requires
 
 - Claude Code
-- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for threads and memory
-- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport
+- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for the persona registry and natural-language dispatch
+- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport and durable memory
 
 Optional: [Laravel Boost MCP](https://github.com/laravelboost/mcp) gives Taylor access to your installed package versions, the application schema, and the official Laravel docs.
 
 ## With the Personas plugin
 
-Per-project memory: Taylor remembers which abstractions you justified, which patterns you've already weighed, and what your team's house style is. Threads continue across CC sessions until you move on, then Taylor writes takeaways to `memory.md` so the next review picks up the convention.
+Per-project memory: Taylor remembers which abstractions you justified, which patterns you've already weighed, and what your team's house style is. Parley keeps one continuous session per project, and `/parley remember taylor` distils the review into durable bullets the next one picks up.
 
 Without the Personas plugin, Taylor still loads his voice and reviews code on demand, but every review is fresh.
 

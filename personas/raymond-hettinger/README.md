@@ -47,12 +47,12 @@ Raymond reviews Python code for Java-isms, anti-patterns, and missed opportuniti
 ### Requires
 
 - Claude Code
-- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for threads and memory
-- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport
+- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for the persona registry and natural-language dispatch
+- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport and durable memory
 
 ## With the Personas plugin
 
-Per-project memory: Raymond remembers your Python version, your team's idiom preferences, and the abstractions you've already chosen. Threads continue across CC sessions until you move on, then Raymond writes takeaways to `memory.md` so the next review starts from your conventions.
+Per-project memory: Raymond remembers your Python version, your team's idiom preferences, and the abstractions you've already chosen. Parley keeps one continuous session per project, and `/parley remember raymond` distils the review into durable bullets the next one starts from.
 
 Without the Personas plugin, Raymond still loads his voice and reviews code on demand, but every review is fresh.
 

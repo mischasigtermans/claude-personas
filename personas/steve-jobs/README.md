@@ -41,12 +41,12 @@ Steve evaluates products, strategies, teams, and presentations through the lens 
 ### Requires
 
 - Claude Code
-- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for threads and memory
-- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport
+- [Personas plugin](https://github.com/mischasigtermans/claude-personas/tree/main/manager) for the persona registry and natural-language dispatch
+- [Parley plugin](https://github.com/mischasigtermans/claude-parley), used by Personas as transport and durable memory
 
 ## With the Personas plugin
 
-Per-project memory: Steve in your Laravel app remembers your launch plan; Steve in your Rust crate remembers the API decisions. Threads continue across CC sessions until you move on, then Steve writes 3-8 takeaway bullets to `memory.md` so the next conversation starts where this one ended.
+Per-project memory: Steve in your Laravel app remembers your launch plan; Steve in your Rust crate remembers the API decisions. Parley keeps one continuous session per project, and `/parley remember steve` distils the conversation into durable bullets that prime the next one, so it starts where this ended.
 
 Without the Personas plugin, Steve still loads his voice and runs his slash commands, but every conversation is fresh.
 
