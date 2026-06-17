@@ -38,6 +38,7 @@ my-persona/
 | `aliases` | yes | Short forms parley resolves to this persona ('marie' → 'marie-curie'). Each alias is written as a separate entry in the extensions manifest pointing at the same path. |
 | `description` | yes | Single sentence shown in the discovery menu and surfaced in `parley_peers`. |
 | `traits` | yes | Tags surfaced in `/personas list`. |
+| `memory` | no | Set `false` to opt this persona out of parley's durable memory. Omit (the default) to keep memory on. Carried into the extensions manifest so parley applies it. |
 
 Do **not** include an `mcpServers` block. The Personas manager registers your persona with parley by writing the extensions manifest at `~/.claude/parley/extensions/personas.json` when the user runs `/personas enable <name>`. Persona plugins must not bundle parley as their own MCP server or write to parley state directly.
 

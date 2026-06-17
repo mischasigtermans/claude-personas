@@ -12,6 +12,8 @@ export interface PersonaMeta {
   tools?: string[];
   traits?: string[];
   mcpServers?: Record<string, unknown>;
+  /** Opt out of parley's durable memory for this persona. Default unset (on). */
+  memory?: boolean;
   source: 'external' | 'plugin';
   path: string;
   pluginRoot?: string;
@@ -83,6 +85,7 @@ async function readPersonaDir(dir: string): Promise<PersonaMeta | null> {
       description: typeof fm.description === 'string' ? fm.description : undefined,
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
+      memory: toOptionalBool(fm.memory),
       source: 'external',
       path: dir,
     };
@@ -120,6 +123,7 @@ async function readPersonaJson(pluginRoot: string): Promise<PersonaMeta | null> 
         typeof json.mcpServers === 'object' && json.mcpServers !== null && !Array.isArray(json.mcpServers)
           ? (json.mcpServers as Record<string, unknown>)
           : undefined,
+      memory: toOptionalBool(json.memory),
       source: 'plugin',
       path: pluginRoot,
       pluginRoot,
@@ -158,6 +162,13 @@ function toStringArray(v: unknown): string[] {
   if (Array.isArray(v)) return v.filter((x): x is string => typeof x === 'string');
   if (typeof v === 'string') return [v];
   return [];
+}
+
+function toOptionalBool(v: unknown): boolean | undefined {
+  if (typeof v === 'boolean') return v;
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  return undefined;
 }
 
 async function safeReaddir(dir: string): Promise<string[]> {

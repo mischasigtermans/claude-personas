@@ -1,6 +1,6 @@
 {
   "name": "personas",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Manager for persona advisors. Each persona is installed as its own marketplace plugin; this manager handles enable/disable and routes ask traffic through parley.",
   "license": "MIT",
   "author": {

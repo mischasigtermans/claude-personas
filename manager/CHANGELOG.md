@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] - 2026-06-17
+
+Personas inherit parley's new durable memory. After a consultation, `/parley remember <persona>` distils it into bullets that prime every future ask. Memory lives entirely in parley (v0.4.0+); personas just declares the per-persona preference.
+
+**Added**
+
+- **`memory` field in `persona.json`.** Optional boolean. Set `false` to opt a persona out of parley's durable memory; omit to keep it on (parley's default). Read into `PersonaMeta.memory` and carried onto the persona's entries in the extensions manifest, so parley resolves it like any peer's declared flag. Bundled personas leave it unset (memory on).
+
+**Changed**
+
+- Manifest version bumped to `0.4.0`; `memory` is emitted on manifest entries only when explicitly declared.
+
 ## [0.3.0] - 2026-05-19
 
 Personas migrates onto parley's extensions seam. The plugin no longer imports parley TypeScript source and no longer writes `~/.claude/parley/peers.json`. Enabled personas live in a manifest under `~/.claude/parley/extensions/personas.json`; parley merges them into its peer registry.

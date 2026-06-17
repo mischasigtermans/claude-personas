@@ -54,6 +54,18 @@ describe('upsertPersona', () => {
     }
   });
 
+  it('carries an explicit memory opt-out, and omits the field when unset', async () => {
+    await upsertPersona(persona({ name: 'quiet', aliases: ['q'], path: '/abs/quiet', memory: false }));
+    await upsertPersona(persona({ name: 'normal', aliases: ['n'], path: '/abs/normal' }));
+    const m = await readManifest();
+    for (const p of m.peers.filter((e) => e.path === '/abs/quiet')) {
+      expect(p.memory).toBe(false);
+    }
+    for (const p of m.peers.filter((e) => e.path === '/abs/normal')) {
+      expect('memory' in p).toBe(false);
+    }
+  });
+
   it('purges stale entries on a path change (plugin version bump)', async () => {
     await upsertPersona(persona({ name: 'steve-jobs', aliases: ['steve'], path: '/abs/v0.1.0' }));
     await upsertPersona(persona({ name: 'steve-jobs', aliases: ['steve'], path: '/abs/v0.2.0' }));

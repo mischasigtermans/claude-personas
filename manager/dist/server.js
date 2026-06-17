@@ -14183,6 +14183,7 @@ async function readPersonaDir(dir) {
       description: typeof fm.description === "string" ? fm.description : undefined,
       tools: toStringArray(fm.tools),
       traits: toStringArray(fm.traits),
+      memory: toOptionalBool(fm.memory),
       source: "external",
       path: dir
     };
@@ -14217,6 +14218,7 @@ async function readPersonaJson(pluginRoot2) {
       tools: toStringArray(json.tools),
       traits: toStringArray(json.traits),
       mcpServers: typeof json.mcpServers === "object" && json.mcpServers !== null && !Array.isArray(json.mcpServers) ? json.mcpServers : undefined,
+      memory: toOptionalBool(json.memory),
       source: "plugin",
       path: pluginRoot2,
       pluginRoot: pluginRoot2
@@ -14254,6 +14256,15 @@ function toStringArray(v) {
     return [v];
   return [];
 }
+function toOptionalBool(v) {
+  if (typeof v === "boolean")
+    return v;
+  if (v === "true")
+    return true;
+  if (v === "false")
+    return false;
+  return;
+}
 async function safeReaddir(dir) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -14271,7 +14282,7 @@ function isEnoent(err) {
 // src/state/manifest.ts
 import { mkdir, readFile as readFile3, rename, writeFile, unlink } from "node:fs/promises";
 import { dirname } from "node:path";
-var MANIFEST_VERSION = "0.3.0";
+var MANIFEST_VERSION = "0.4.0";
 var MANIFEST_DESCRIPTION = "Persona advisors with knowledge modules";
 function empty() {
   return {
@@ -14330,7 +14341,8 @@ async function upsertPersona(p) {
       type: "persona",
       model: p.model,
       mcpServers: isPlainObject3(p.mcpServers) ? p.mcpServers : undefined,
-      skipPermissions: true
+      skipPermissions: true,
+      ...typeof p.memory === "boolean" ? { memory: p.memory } : {}
     }))
   ];
   await writeManifest({ ...m, peers: next });

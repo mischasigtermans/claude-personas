@@ -24,6 +24,8 @@ export interface ExtensionPeer {
   mcpServers?: Record<string, unknown>;
   /** Personas run with permissions skipped; they're trusted advisory peers. */
   skipPermissions?: boolean;
+  /** Opt out of parley's durable memory. Omitted means on (parley's default). */
+  memory?: boolean;
 }
 
 export interface PersonasExtensionManifest {
@@ -33,7 +35,7 @@ export interface PersonasExtensionManifest {
   peers: ExtensionPeer[];
 }
 
-const MANIFEST_VERSION = '0.3.0';
+const MANIFEST_VERSION = '0.4.0';
 const MANIFEST_DESCRIPTION = 'Persona advisors with knowledge modules';
 
 function empty(): PersonasExtensionManifest {
@@ -107,6 +109,7 @@ export async function upsertPersona(p: PersonaMeta): Promise<void> {
       model: p.model,
       mcpServers: isPlainObject(p.mcpServers) ? p.mcpServers : undefined,
       skipPermissions: true,
+      ...(typeof p.memory === 'boolean' ? { memory: p.memory } : {}),
     })),
   ];
   await writeManifest({ ...m, peers: next });
