@@ -50,13 +50,14 @@ To start a persona fresh (forget the prior turns): `/parley reset <name>` clears
 - Per-project continuity: parley keeps one continuous Claude session per (calling project, persona), keyed off the git remote. The same persona has separate context per project.
 - Parley registry: enabling a persona writes it to parley's extensions manifest, so it's reachable from any project session as an ordinary peer.
 - Per-persona runtime: `model`, `mcpServers`, and trusted-peer permissions from `persona.json` carry through to the headless spawn.
+- Durable memory: parley remembers what you distil from a persona across sessions. Opt a persona out with `"memory": false` in its `persona.json`.
 
 ## State split
 
 - **Personas plugin** owns: which personas exist (installed plugins + external clones), which are enabled (manifest at `~/.claude/parley/extensions/personas.json`).
 - **Parley** owns: how to reach an enabled persona, session continuity across turns, transcripts.
 
-There is no separate thread or memory state machine in this plugin. Continuity is parley's session pointer.
+There is no separate thread or memory state machine in this plugin. Continuity is parley's: the resumed session pointer plus its durable memory (parley ≥ 0.4.0). Personas only declares the per-persona memory preference.
 
 ## Documentation
 
