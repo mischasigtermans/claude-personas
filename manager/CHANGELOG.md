@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1] - 2026-09-25
+
+**Fixed**
+
+- **Enabled personas follow plugin updates.** A plugin update installs into a new versioned directory, but the parley manifest kept the path written at `enable`, so parley went on spawning the old version. The server now re-points every enabled plugin persona at its current install path on startup (`syncPluginPaths`).
+- The installed-plugins lookup honours `CLAUDE_CONFIG_DIR`.
+
 ## [0.4.0] - 2026-06-17
 
 Personas inherit parley's new durable memory. After a consultation, `/parley remember <persona>` distils it into bullets that prime every future ask. Memory lives entirely in parley (v0.4.0+); personas just declares the per-persona preference.

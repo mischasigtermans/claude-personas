@@ -14111,7 +14111,8 @@ async function loadInstalledPlugins() {
   if (cache)
     return cache;
   try {
-    const raw = await readFile(join2(homedir2(), ".claude", "plugins", "installed_plugins.json"), "utf8");
+    const configDir = process.env.CLAUDE_CONFIG_DIR ?? join2(homedir2(), ".claude");
+    const raw = await readFile(join2(configDir, "plugins", "installed_plugins.json"), "utf8");
     const parsed = JSON.parse(raw);
     cache = { plugins: parsed.plugins ?? {} };
   } catch {
@@ -14346,6 +14347,17 @@ async function upsertPersona(p) {
     }))
   ];
   await writeManifest({ ...m, peers: next });
+}
+async function syncPluginPaths() {
+  const m = await readManifest();
+  for (const p of await listPersonas()) {
+    if (p.source !== "plugin")
+      continue;
+    const rows = m.peers.filter((e) => e.alias === p.name.toLowerCase());
+    if (rows.length === 0 || rows.every((e) => e.path === p.path))
+      continue;
+    await upsertPersona(p);
+  }
 }
 async function removePersona(canonicalName, personaPath) {
   const m = await readManifest();
@@ -14631,6 +14643,10 @@ function errorMessage(err) {
   return String(err);
 }
 async function main() {
+  await syncPluginPaths().catch((err) => {
+    process.stderr.write(`personas: manifest sync failed: ${errorMessage(err)}
+`);
+  });
   const server = new Server({ name: "personas", version: "0.3.0" }, { capabilities: { tools: {} } });
   const byName = new Map(tools.map((t) => [t.name, t]));
   server.setRequestHandler(ListToolsRequestSchema, async () => ({

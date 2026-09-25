@@ -21,10 +21,8 @@ let cache: InstalledPluginsFile | null = null;
 export async function loadInstalledPlugins(): Promise<InstalledPluginsFile> {
   if (cache) return cache;
   try {
-    const raw = await readFile(
-      join(homedir(), '.claude', 'plugins', 'installed_plugins.json'),
-      'utf8',
-    );
+    const configDir = process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude');
+    const raw = await readFile(join(configDir, 'plugins', 'installed_plugins.json'), 'utf8');
     const parsed = JSON.parse(raw) as InstalledPluginsFile;
     cache = { plugins: parsed.plugins ?? {} };
   } catch {

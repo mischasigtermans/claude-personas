@@ -10,7 +10,7 @@
 import { mkdir, readFile, rename, writeFile, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { paths } from './paths.js';
-import type { PersonaMeta } from './persona.js';
+import { listPersonas, type PersonaMeta } from './persona.js';
 
 export interface ExtensionPeer {
   alias: string;
@@ -113,6 +113,21 @@ export async function upsertPersona(p: PersonaMeta): Promise<void> {
     })),
   ];
   await writeManifest({ ...m, peers: next });
+}
+
+/**
+ * Point every enabled plugin persona at its current install path. A plugin
+ * update installs into a new versioned directory and leaves the manifest on
+ * the old one, so parley keeps spawning the previous version.
+ */
+export async function syncPluginPaths(): Promise<void> {
+  const m = await readManifest();
+  for (const p of await listPersonas()) {
+    if (p.source !== 'plugin') continue;
+    const rows = m.peers.filter((e) => e.alias === p.name.toLowerCase());
+    if (rows.length === 0 || rows.every((e) => e.path === p.path)) continue;
+    await upsertPersona(p);
+  }
 }
 
 /**

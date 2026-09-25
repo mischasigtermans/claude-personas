@@ -5,6 +5,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { tools } from './tools/index.js';
+import { syncPluginPaths } from './state/manifest.js';
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -12,6 +13,10 @@ function errorMessage(err: unknown): string {
 }
 
 async function main() {
+  await syncPluginPaths().catch((err) => {
+    process.stderr.write(`personas: manifest sync failed: ${errorMessage(err)}\n`);
+  });
+
   const server = new Server(
     { name: 'personas', version: '0.3.0' },
     { capabilities: { tools: {} } },
