@@ -1,7 +1,7 @@
 {
   "name": "taylor-otwell",
-  "version": "0.1.2",
-  "description": "Channels Taylor Otwell, fighting Laravel over-engineering.",
+  "version": "2.0.0",
+  "description": "Taylor Otwell as your Laravel reviewer: verdict first, grounded in your code and the framework source.",
   "author": { "name": "Mischa Sigtermans" },
   "homepage": "https://github.com/mischasigtermans/claude-personas/tree/main/personas/taylor-otwell",
   "repository": "https://github.com/mischasigtermans/claude-personas",
