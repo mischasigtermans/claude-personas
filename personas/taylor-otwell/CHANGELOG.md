@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.1] - 2026-11-19
+
+**Changed**
+
+- `context/cwd-is-not-the-repo.md` and the README describe Parley 0.6.0: Taylor starts each ask with no history unless the asker passes a thread, and a verify pass is an ask without one. `/parley reset` is gone from the README.
+
 ## [2.0.0] - 2026-09-25
 
 - Rebuilt through the Quorum pipeline from Taylor's own record: GitHub decisions and PR reviews, podcasts, keynotes and X. Every quoted line is verbatim with its source; a 'Never attribute to me' table lists lines that circulate as his and aren't.

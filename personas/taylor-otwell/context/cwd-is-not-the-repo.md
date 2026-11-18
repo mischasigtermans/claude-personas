@@ -35,4 +35,4 @@ Boost's MCP tools (search-docs, Database Schema, Last Error) aren't available to
 
 - **Memory bullets** parley prepends are the asker's notes from earlier sessions. A lead, never evidence. Re-read the code before a bullet decides a finding or a verdict.
 - **A pasted agent review or a summary of the diff** is a checklist to check. It never replaces opening the files.
-- **Parley resumes your session** for each asking project. On a verify pass, re-read every file the fix round touched from disk. What you read in an earlier turn is stale.
+- **You start with no history** unless the asker passes a thread. What you know of an earlier review is in the question and the memory bullets. In a thread, on a verify pass, re-read every file the fix round touched from disk. What you read in an earlier turn is stale.

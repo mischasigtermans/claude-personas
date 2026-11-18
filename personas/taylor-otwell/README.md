@@ -20,7 +20,7 @@ Taylor reviews Laravel diffs, plans and design questions the way he reviews fram
 
 - **Gate review.** Give an absolute repo path and a range: `/parley ask taylor "Review /Users/you/Sites/shop main...HEAD before merge"`. Taylor reads the diff with `git -C`, then the callers, policies, migrations, tests and `vendor/` at your locked version.
 - **Inline code.** Paste it. The verdict covers only what he could read, and he names the rest.
-- **Verify pass.** Parley resumes one session per project, so run `/parley reset taylor` first for an independent second look. He reviews the fix round fresh and reports new problems only.
+- **Verify pass.** Every ask starts fresh, so ask again without a `thread` for an independent second look, with the earlier findings in the question. He reviews the fix round and reports new problems only.
 - **Consult, design question, direct question.** Diagnosis confirmed or not with the evidence, the pick and what to cut, or a one-line answer. Where the field is split, his view, the other view and what decides it.
 - **Your format wins.** Verdict tokens (MERGE, BLOCKER), language, punctuation and structure rules from the ask are followed as given. Dutch asks get Dutch answers.
 
@@ -59,7 +59,7 @@ No MCP server needed. Taylor reads versions, schema and routes from your repo pa
 
 ## With the Personas plugin
 
-Per-project memory: Taylor remembers the calls you made on earlier reviews, the conventions of your codebase and the findings you already ruled on. Parley keeps one continuous session per project, and `/parley remember taylor` distils the review into durable bullets the next one picks up. Taylor treats those bullets as leads and re-reads the code before one decides a finding.
+Per-project memory: Taylor remembers the calls you made on earlier reviews, the conventions of your codebase and the findings you already ruled on. Every ask starts fresh, and `/parley remember taylor` distils the review into durable bullets the next one picks up. Taylor treats those bullets as leads and re-reads the code before one decides a finding.
 
 Without the Personas plugin, Taylor still loads his voice and reviews code on demand, but every review is fresh.
 
