@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.2] - 2026-11-19
+
+**Changed**
+
+- The `personas` skill describes Parley 0.6.0's conversations: every ask starts fresh and must stand on its own, the answer's first line names a thread, and an ask passes that id as `thread` for a follow-up or to have the persona fix its own findings.
+- The README and docs drop `/parley reset` and the one continuous session per project. A fresh conversation is the default; threads, transcripts and memory stay per calling project.
+- The skill, the docs and the `disable` tool say what disabling a persona keeps: its transcript and memory stay, and Parley's next sweep removes its threads.
+- Requires Parley 0.6.0 or later.
+
 ## [0.4.1] - 2026-09-25
 
 **Fixed**

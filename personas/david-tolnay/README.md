@@ -48,7 +48,7 @@ David reviews Rust code for idiomatic patterns, type safety, and unnecessary fig
 
 ## With the Personas plugin
 
-Per-project memory: David remembers your crate's lifetime conventions, error type choices, and which `unsafe` invariants you've already justified. Parley keeps one continuous session per project, and `/parley remember david` distils the review into durable bullets the next one starts from.
+Per-project memory: David remembers your crate's lifetime conventions, error type choices, and which `unsafe` invariants you've already justified. Every ask starts fresh, and `/parley remember david` distils the review into durable bullets the next one starts from.
 
 Without the Personas plugin, David still loads his voice and reviews code on demand, but every review is fresh.
 

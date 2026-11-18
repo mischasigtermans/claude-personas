@@ -14491,7 +14491,7 @@ var personasEnable = {
 };
 var personasDisable = {
   name: "disable",
-  description: "Disable a persona by canonical name or alias. Removes its entries from the parley extensions manifest. Open threads on disk are preserved.",
+  description: "Disable a persona by canonical name or alias. Removes its entries from the parley extensions manifest. Its parley transcript and memory are preserved.",
   inputSchema: {
     type: "object",
     properties: { name: { type: "string" } },

@@ -52,7 +52,7 @@ Raymond reviews Python code for Java-isms, anti-patterns, and missed opportuniti
 
 ## With the Personas plugin
 
-Per-project memory: Raymond remembers your Python version, your team's idiom preferences, and the abstractions you've already chosen. Parley keeps one continuous session per project, and `/parley remember raymond` distils the review into durable bullets the next one starts from.
+Per-project memory: Raymond remembers your Python version, your team's idiom preferences, and the abstractions you've already chosen. Every ask starts fresh, and `/parley remember raymond` distils the review into durable bullets the next one starts from.
 
 Without the Personas plugin, Raymond still loads his voice and reviews code on demand, but every review is fresh.
 

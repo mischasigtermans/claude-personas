@@ -46,7 +46,7 @@ Steve evaluates products, strategies, teams, and presentations through the lens 
 
 ## With the Personas plugin
 
-Per-project memory: Steve in your Laravel app remembers your launch plan; Steve in your Rust crate remembers the API decisions. Parley keeps one continuous session per project, and `/parley remember steve` distils the conversation into durable bullets that prime the next one, so it starts where this ended.
+Per-project memory: Steve in your Laravel app remembers your launch plan; Steve in your Rust crate remembers the API decisions. Every ask starts fresh, and `/parley remember steve` distils the conversation into durable bullets that prime the next one, so it starts where this ended.
 
 Without the Personas plugin, Steve still loads his voice and runs his slash commands, but every conversation is fresh.
 

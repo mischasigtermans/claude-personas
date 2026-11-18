@@ -5,12 +5,12 @@ description: Consult and manage persona advisors installed as separate marketpla
 
 # Personas
 
-Persona advisors you can consult from any project. Each persona is a peer with its own voice and knowledge module. The personas plugin manages enable/disable state via the parley extensions manifest. Asking a persona goes through `parley_ask`. Parley handles spawning, session continuity (via `--resume`), and the transcript log.
+Persona advisors you can consult from any project. Each persona is a peer with its own voice and knowledge module. The personas plugin manages enable/disable state via the parley extensions manifest. Asking a persona goes through `parley_ask`. Parley handles spawning, threads (via `--resume`), and the transcript log.
 
 State split:
 
 - **Personas plugin** owns: which personas exist (installed plugins + external clones), which are enabled (manifest at `~/.claude/parley/extensions/personas.json`).
-- **Parley** owns: how to reach an enabled persona, session continuity across turns, transcripts. Enabled personas appear in `parley_peers` as ordinary peers.
+- **Parley** owns: how to reach an enabled persona, threads, transcripts, memory. Enabled personas appear in `parley_peers` as ordinary peers.
 
 **Use the MCP tools for every state operation. Never `Bash` mkdir, sha1, or write JSON state.** If a tool seems missing, flag it. Don't fall back to bash.
 
@@ -64,12 +64,12 @@ Then run the *ask sequence*.
 
 Once you have a resolved, enabled persona name and a user question:
 
-1. **Craft the question.** The persona is a separate session and only sees this prompt. Treat it as self-contained:
+1. **Craft the question.** Every ask starts a fresh conversation. The persona is a separate session and only sees this prompt plus its Parley memory file, nothing of your earlier asks. Treat it as self-contained:
    - State the goal in one sentence.
    - Include any relevant snippet, error, or context the persona needs to answer.
    - Be specific about what you want back ("push back on this plan", not "thoughts?").
 
-2. **Call `parley_ask`** with `peer` = the persona's canonical name (or any alias) and `question` = the crafted prompt. Parley resolves the alias via the personas extension manifest, spawns claude in the persona's plugin directory (so `CLAUDE.md` loads with the persona's voice), and routes through whichever transport applies (live if you've summoned a Terminal, headless otherwise). Continuity across turns is automatic via parley's session pointer.
+2. **Call `parley_ask`** with `peer` = the persona's canonical name (or any alias) and `question` = the crafted prompt. Parley resolves the alias via the personas extension manifest, spawns claude in the persona's plugin directory (so `CLAUDE.md` loads with the persona's voice), and routes through whichever transport applies (live if you've summoned a Terminal and pass no `thread`, headless otherwise). A headless answer's first line names its thread: `[<alias> · thread <id>]`. Keep the id. A live answer names no thread.
 
 3. **Display.** Return the reply prefixed with the persona's display name in italics: *Steve Jobs:* …
 
@@ -77,9 +77,9 @@ Once you have a resolved, enabled persona name and a user question:
 
 ### Follow-ups
 
-Subsequent `parley_ask` calls to the same persona resume the cached session; the persona remembers the prior turn. No explicit thread management is needed.
+To continue a conversation, pass the answer's thread id as `thread` on the next `parley_ask`. Do this for a follow-up, or when the persona should fix its own findings. Without `thread` the persona starts over.
 
-To start fresh (the persona forgets prior context): `/parley reset <persona-name>` clears the cached session for this project. The next ask spawns a new claude session.
+Leave `thread` out for a fresh second pass, such as an independent review of a fix round. To find a thread from an earlier session, `/parley peers` lists a persona's threads with more than one turn.
 
 ---
 
@@ -108,7 +108,7 @@ Parse the argument the user supplied with `/personas` (or the operational reques
    Common moves:
      /personas ask <name> <question>     explicit ask (routes through parley_ask)
      /personas enable <name>             activate a persona
-     /personas disable <name>            deactivate (preserves any cached state)
+     /personas disable <name>            deactivate (keeps transcripts and memory)
      /personas add <git-url-or-path>     install an external persona
    Or just speak: "ask steve about X", "what would taylor say".
    ```
@@ -152,4 +152,4 @@ Print the "Common moves" hint from the discovery menu.
 - Don't `Bash` your way to mkdir, sha1, or JSON writes. Every state operation goes through an MCP tool.
 - Don't fabricate aliases or invent personas not in the list.
 - Don't call `parley_add` to register a persona manually. The personas plugin owns the extension manifest; manual peers.json entries are a different code path.
-- Don't expect thread / memory / close machinery. It's not part of this plugin's surface in v0.3.0. Continuity is parley's session pointer, not personas-specific state.
+- Don't expect thread / memory / close machinery from this plugin. It's not part of its surface. Threads and memory are parley's, not personas-specific state.
