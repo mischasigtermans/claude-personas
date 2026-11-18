@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2026-11-19
+
+- `CLAUDE.md` says how an ask arrives under Parley 0.6.0: with no history unless the asker passes a thread, the memory bullets as a lead to check, and a re-read of what changed when a thread continues.
+
 ## [0.1.2] - 2026-09-25
 
 - Fix: `CLAUDE.md` imports the `context/` files (voice, quotes, personality, anti-patterns). The 0.1.0 migration dropped these imports, so a spawned persona loaded `CLAUDE.md` alone. `manager/tests/persona-context.test.ts` fails when a context file goes unimported.
